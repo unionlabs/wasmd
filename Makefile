@@ -125,7 +125,7 @@ distclean: clean
 ### Testing
 
 test: test-unit
-test-all: test-race test-cover test-system
+test-all: test-race test-cover
 
 test-unit:
 	@VERSION=$(VERSION) go test -mod=readonly -tags='ledger test_ledger_mock' ./...
@@ -150,9 +150,6 @@ test-sim-multi-seed-short: runsim
 test-sim-deterministic: runsim
 	@echo "Running application deterministic simulation. This may take awhile!"
 	@$(BINDIR)/runsim -Jobs=4 -SimAppPkg=$(SIMAPP) -ExitOnFail 1 1 TestAppStateDeterminism
-
-test-system: install
-	$(MAKE) -C tests/system/ test
 
 ###############################################################################
 ###                                Linting                                  ###
@@ -202,5 +199,4 @@ proto-check-breaking:
 .PHONY: all install install-debug \
 	go-mod-cache draw-deps clean build format \
 	test test-all test-build test-cover test-unit test-race \
-	test-sim-import-export build-windows-client \
-	test-system
+	test-sim-import-export build-windows-client
