@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/cometbft/cometbft/crypto"
-	"github.com/cometbft/cometbft/crypto/bn254"
 	"github.com/cometbft/cometbft/crypto/ed25519"
 	"github.com/cometbft/cometbft/crypto/secp256k1"
 	"github.com/cometbft/cometbft/libs/json"
@@ -15,7 +14,6 @@ func init() {
 	json.RegisterType((*pc.PublicKey)(nil), "tendermint.crypto.PublicKey")
 	json.RegisterType((*pc.PublicKey_Ed25519)(nil), "tendermint.crypto.PublicKey_Ed25519")
 	json.RegisterType((*pc.PublicKey_Secp256K1)(nil), "tendermint.crypto.PublicKey_Secp256K1")
-	json.RegisterType((*pc.PublicKey_Bn254)(nil), "tendermint.crypto.PublicKey_Bn254")
 }
 
 // PubKeyToProto takes crypto.PubKey and transforms it to a protobuf Pubkey
@@ -32,12 +30,6 @@ func PubKeyToProto(k crypto.PubKey) (pc.PublicKey, error) {
 		kp = pc.PublicKey{
 			Sum: &pc.PublicKey_Secp256K1{
 				Secp256K1: k,
-			},
-		}
-	case bn254.PubKey:
-		kp = pc.PublicKey{
-			Sum: &pc.PublicKey_Bn254{
-				Bn254: k,
 			},
 		}
 	default:
@@ -64,18 +56,6 @@ func PubKeyFromProto(k pc.PublicKey) (crypto.PubKey, error) {
 		}
 		pk := make(secp256k1.PubKey, secp256k1.PubKeySize)
 		copy(pk, k.Secp256K1)
-		return pk, nil
-	case *pc.PublicKey_Bn254:
-		if len(k.Bn254) != bn254.PubKeySize {
-			return nil, fmt.Errorf("invalid size for PubKeyBn254. Got %d, expected %d",
-				len(k.Bn254), bn254.PubKeySize)
-		}
-		pk := make(bn254.PubKey, bn254.PubKeySize)
-		copy(pk, k.Bn254)
-		err := pk.EnsureValid()
-		if(err != nil) {
-			return nil, fmt.Errorf("invalid compression for PubKeyBn254, %v", err)
-		}
 		return pk, nil
 	default:
 		return nil, fmt.Errorf("fromproto: key type %v is not supported", k)

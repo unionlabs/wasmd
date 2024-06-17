@@ -9,11 +9,9 @@ import (
 	"sort"
 	"strings"
 
-	cometbn254 "github.com/cometbft/cometbft/crypto/bn254"
 	"github.com/cometbft/cometbft/crypto/merkle"
 	cmtmath "github.com/cometbft/cometbft/libs/math"
 	cmtproto "github.com/cometbft/cometbft/proto/tendermint/types"
-	"github.com/consensys/gnark-crypto/ecc/bn254"
 )
 
 const (
@@ -349,26 +347,6 @@ func (vals *ValidatorSet) findProposer() *Validator {
 func (vals *ValidatorSet) Hash() []byte {
 	bzs := make([][]byte, len(vals.Validators))
 	for i, val := range vals.Validators {
-		var pubKey bn254.G1Affine
-		_, err := pubKey.SetBytes(val.PubKey.Bytes())
-		if err != nil {
-			panic(fmt.Errorf("ValidatorSet.Hash(): impossible invalid validator: %v: Err %s", val, err))
-		}
-		leaf, err := cometbn254.NewMerkleLeaf(pubKey, val.VotingPower)
-		if err != nil {
-			panic(fmt.Errorf("ValidatorSet.Hash(): impossible merkle leaf creation: %v", err))
-		}
-		bzs[i], err = leaf.Hash()
-		if err != nil {
-			panic(fmt.Errorf("ValidatorSet.Hash(): impossible merkle leaf hash: %v", err))
-		}
-	}
-	return merkle.MimcHashFromByteSlices(bzs)
-}
-
-func (vals *ValidatorSet) HashSha256() []byte {
-	bzs := make([][]byte, len(vals.Validators))
-	for i, val := range vals.Validators {
 		bzs[i] = val.Bytes()
 	}
 	return merkle.HashFromByteSlices(bzs)
@@ -685,37 +663,44 @@ func (vals *ValidatorSet) VerifyCommit(chainID string, blockID BlockID,
 	return VerifyCommit(chainID, vals, blockID, height, commit)
 }
 
-func (vals *ValidatorSet) VerifyCommitLegacy(chainID string, blockID BlockID,
-	height int64, commit *Commit,
-) error {
-	return VerifyCommitLegacy(chainID, vals, blockID, height, commit)
-}
-
 // LIGHT CLIENT VERIFICATION METHODS
 
 // VerifyCommitLight verifies +2/3 of the set had signed the given commit.
+// It does NOT count all signatures.
 func (vals *ValidatorSet) VerifyCommitLight(chainID string, blockID BlockID,
 	height int64, commit *Commit,
 ) error {
 	return VerifyCommitLight(chainID, vals, blockID, height, commit)
 }
 
-func (vals *ValidatorSet) VerifyCommitLightLegacy(chainID string, blockID BlockID,
+// VerifyCommitLight verifies +2/3 of the set had signed the given commit.
+// It DOES count all signatures.
+func (vals *ValidatorSet) VerifyCommitLightAllSignatures(chainID string, blockID BlockID,
 	height int64, commit *Commit,
 ) error {
-	return VerifyCommitLightLegacy(chainID, vals, blockID, height, commit)
+	return VerifyCommitLightAllSignatures(chainID, vals, blockID, height, commit)
 }
 
 // VerifyCommitLightTrusting verifies that trustLevel of the validator set signed
 // this commit.
-func (vals *ValidatorSet) VerifyCommitLightTrusting(chainID string, commit *Commit, trustLevel cmtmath.Fraction) error {
+// It does NOT count all signatures.
+func (vals *ValidatorSet) VerifyCommitLightTrusting(
+	chainID string,
+	commit *Commit,
+	trustLevel cmtmath.Fraction,
+) error {
 	return VerifyCommitLightTrusting(chainID, vals, commit, trustLevel)
 }
 
 // VerifyCommitLightTrusting verifies that trustLevel of the validator set signed
 // this commit.
-func (vals *ValidatorSet) VerifyCommitLightTrustingLegacy(chainID string, commit *Commit, trustLevel cmtmath.Fraction) error {
-	return VerifyCommitLightTrustingLegacy(chainID, vals, commit, trustLevel)
+// It DOES count all signatures.
+func (vals *ValidatorSet) VerifyCommitLightTrustingAllSignatures(
+	chainID string,
+	commit *Commit,
+	trustLevel cmtmath.Fraction,
+) error {
+	return VerifyCommitLightTrustingAllSignatures(chainID, vals, commit, trustLevel)
 }
 
 // findPreviousProposer reverses the compare proposer priority function to find the validator

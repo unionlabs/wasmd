@@ -4,14 +4,12 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"math/big"
 	"time"
 
 	"github.com/cometbft/cometbft/crypto"
 	cmtbytes "github.com/cometbft/cometbft/libs/bytes"
 	"github.com/cometbft/cometbft/libs/protoio"
 	cmtproto "github.com/cometbft/cometbft/proto/tendermint/types"
-	"github.com/consensys/gnark-crypto/ecc/bn254/fr/mimc"
 )
 
 const (
@@ -47,6 +45,15 @@ func NewConflictingVoteError(vote1, vote2 *Vote) *ErrVoteConflictingVotes {
 		VoteA: vote1,
 		VoteB: vote2,
 	}
+}
+
+// The vote extension is only valid for non-nil precommits.
+type ErrVoteExtensionInvalid struct {
+	ExtSignature []byte
+}
+
+func (err *ErrVoteExtensionInvalid) Error() string {
+	return fmt.Sprintf("extensions must be present IFF vote is a non-nil Precommit; extension signature: %X", err.ExtSignature)
 }
 
 // Address is hex bytes.
@@ -140,81 +147,6 @@ func (vote *Vote) ExtendedCommitSig() ExtendedCommitSig {
 // See CanonicalizeVote
 func VoteSignBytes(chainID string, vote *cmtproto.Vote) []byte {
 	pb := CanonicalizeVote(chainID, vote)
-
-	padBytes := func(b []byte) []byte {
-		var padded [32]byte
-		if b == nil {
-			return padded[:]
-		}
-		return big.NewInt(0).SetBytes(b).FillBytes(padded[:])
-	}
-
-	mimc := mimc.NewMiMC()
-	var padded [32]byte
-	writeI64 := func(x int64) {
-		big.NewInt(int64(x)).FillBytes(padded[:])
-		_, err := mimc.Write(padded[:])
-		if err != nil {
-			panic(err)
-		}
-	}
-	writeU32 := func(x uint32) {
-		big.NewInt(0).SetUint64(uint64(x)).FillBytes(padded[:])
-		_, err := mimc.Write(padded[:])
-		if err != nil {
-			panic(err)
-		}
-	}
-	writeMiMCHash := func(b []byte) {
-		_, err := mimc.Write(b)
-		if err != nil {
-			panic(err)
-		}
-	}
-	writeHash := func(b []byte) {
-		if len(b) == 0 {
-			b = make([]byte, 32)
-		}
-		head, tail := b[0], b[1:]
-		writeMiMCHash(padBytes([]byte{head}))
-		writeMiMCHash(padBytes(tail))
-	}
-	writeBytes := func(b []byte) {
-		if len(b) > 31 {
-			panic("impossible: bytes must fit in F_r")
-		}
-		_, err := mimc.Write(padBytes(b))
-		if err != nil {
-			panic(err)
-		}
-	}
-
-	writeI64(int64(pb.Type))
-	writeI64(pb.Height)
-	writeI64(pb.Round)
-	if pb.BlockID == nil {
-		writeMiMCHash([]byte{})
-		writeI64(0)
-		writeMiMCHash([]byte{})
-	} else {
-		writeMiMCHash(pb.BlockID.Hash)
-		writeU32(pb.BlockID.PartSetHeader.Total)
-		if pb.BlockID.PartSetHeader.Hash == nil {
-			writeMiMCHash([]byte{})
-		} else {
-			writeHash(pb.BlockID.PartSetHeader.Hash)
-		}
-	}
-	writeBytes([]byte(pb.ChainID))
-
-	return mimc.Sum(nil)
-}
-
-// Same as `VoteSignBytes` but uses Tendermint/CometBFT's CanonicalVote instead.
-// This function is implemented mainly to be able to support the `07-tendermint`
-// light client.
-func VoteSignBytesLegacy(chainID string, vote *cmtproto.Vote) []byte {
-	pb := CanonicalizeVoteLegacy(chainID, vote)
 	bz, err := protoio.MarshalDelimited(&pb)
 	if err != nil {
 		panic(err)
@@ -473,6 +405,9 @@ func VotesToProto(votes []*Vote) []*cmtproto.Vote {
 	return res
 }
 
+// SignAndCheckVote signs the vote with the given privVal and checks the vote.
+// It returns an error if the vote is invalid and a boolean indicating if the
+// error is recoverable or not.
 func SignAndCheckVote(
 	vote *Vote,
 	privVal PrivValidator,
@@ -481,33 +416,30 @@ func SignAndCheckVote(
 ) (bool, error) {
 	v := vote.ToProto()
 	if err := privVal.SignVote(chainID, v); err != nil {
-		// Failing to sign a vote has always been a recoverable error, this function keeps it that way
-		return true, err // true = recoverable
+		// Failing to sign a vote has always been a recoverable error, this
+		// function keeps it that way.
+		return true, err
 	}
 	vote.Signature = v.Signature
 
 	isPrecommit := vote.Type == cmtproto.PrecommitType
 	if !isPrecommit && extensionsEnabled {
 		// Non-recoverable because the caller passed parameters that don't make sense
-		return false, fmt.Errorf("only Precommit votes may have extensions enabled; vote type: %d", vote.Type)
+		return false, &ErrVoteExtensionInvalid{ExtSignature: v.ExtensionSignature}
 	}
 
 	isNil := vote.BlockID.IsZero()
 	extSignature := (len(v.ExtensionSignature) > 0)
 	if extSignature == (!isPrecommit || isNil) {
 		// Non-recoverable because the vote is malformed
-		return false, fmt.Errorf(
-			"extensions must be present IFF vote is a non-nil Precommit; present %t, vote type %d, is nil %t",
-			extSignature,
-			vote.Type,
-			isNil,
-		)
+		return false, &ErrVoteExtensionInvalid{ExtSignature: v.ExtensionSignature}
 	}
 
 	vote.ExtensionSignature = nil
 	if extensionsEnabled {
 		vote.ExtensionSignature = v.ExtensionSignature
 	}
+
 	vote.Timestamp = v.Timestamp
 
 	return true, nil

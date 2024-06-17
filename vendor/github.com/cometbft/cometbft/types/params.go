@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/cometbft/cometbft/crypto/bn254"
 	"github.com/cometbft/cometbft/crypto/ed25519"
 	"github.com/cometbft/cometbft/crypto/secp256k1"
 	"github.com/cometbft/cometbft/crypto/tmhash"
@@ -24,13 +23,11 @@ const (
 
 	ABCIPubKeyTypeEd25519   = ed25519.KeyType
 	ABCIPubKeyTypeSecp256k1 = secp256k1.KeyType
-	ABCIPubKeyTypeBn254     = bn254.KeyType
 )
 
 var ABCIPubKeyTypesToNames = map[string]string{
 	ABCIPubKeyTypeEd25519:   ed25519.PubKeyName,
 	ABCIPubKeyTypeSecp256k1: secp256k1.PubKeyName,
-	ABCIPubKeyTypeBn254:     bn254.PubKeyName,
 }
 
 // ConsensusParams contains consensus critical parameters that determine the
@@ -117,7 +114,7 @@ func DefaultEvidenceParams() EvidenceParams {
 // only ed25519 pubkeys.
 func DefaultValidatorParams() ValidatorParams {
 	return ValidatorParams{
-		PubKeyTypes: []string{ABCIPubKeyTypeBn254},
+		PubKeyTypes: []string{ABCIPubKeyTypeEd25519},
 	}
 }
 
@@ -208,27 +205,63 @@ func (params ConsensusParams) ValidateBasic() error {
 	return nil
 }
 
+// ValidateUpdate validates the updated VoteExtensionsEnableHeight.
+// | r | params...EnableHeight | updated...EnableHeight | result (nil == pass)
+// |  1 | *                    | (nil)                  | nil
+// |  2 | *                    | < 0                    | VoteExtensionsEnableHeight must be positive
+// |  3 | <=0                  | 0                      | nil
+// |  4 | X                    | X (>=0)                | nil
+// |  5 | > 0; <=height        | 0                      | vote extensions cannot be disabled once enabled
+// |  6 | > 0; > height        | 0                      | nil (disable a previous proposal)
+// |  7 | *                    | <=height               | vote extensions cannot be updated to a past height
+// |  8 | <=0                  | > height (*)           | nil
+// |  9 | (> 0) <=height       | > height (*)           | vote extensions cannot be modified once enabled
+// | 10 | (> 0) > height       | > height (*)           | nil
 func (params ConsensusParams) ValidateUpdate(updated *cmtproto.ConsensusParams, h int64) error {
-	if updated.Abci == nil {
+	// 1
+	if updated == nil || updated.Abci == nil {
 		return nil
 	}
+	// 2
+	if updated.Abci.VoteExtensionsEnableHeight < 0 {
+		return errors.New("VoteExtensionsEnableHeight must be positive")
+	}
+	// 3
+	if params.ABCI.VoteExtensionsEnableHeight <= 0 && updated.Abci.VoteExtensionsEnableHeight == 0 {
+		return nil
+	}
+	// 4 (implicit: updated.Abci.VoteExtensionsEnableHeight >= 0)
 	if params.ABCI.VoteExtensionsEnableHeight == updated.Abci.VoteExtensionsEnableHeight {
 		return nil
 	}
-	if params.ABCI.VoteExtensionsEnableHeight != 0 && updated.Abci.VoteExtensionsEnableHeight == 0 {
-		return errors.New("vote extensions cannot be disabled once enabled")
+	// 5 & 6
+	if params.ABCI.VoteExtensionsEnableHeight > 0 && updated.Abci.VoteExtensionsEnableHeight == 0 {
+		// 5
+		if params.ABCI.VoteExtensionsEnableHeight <= h {
+			return fmt.Errorf("vote extensions cannot be disabled once enabled"+
+				"old enable height: %d, current height %d",
+				params.ABCI.VoteExtensionsEnableHeight, h)
+		}
+		// 6
+		return nil
 	}
+	// 7 (implicit: updated.Abci.VoteExtensionsEnableHeight > 0)
 	if updated.Abci.VoteExtensionsEnableHeight <= h {
-		return fmt.Errorf("VoteExtensionsEnableHeight cannot be updated to a past height, "+
-			"initial height: %d, current height %d",
-			params.ABCI.VoteExtensionsEnableHeight, h)
+		return fmt.Errorf("vote extensions cannot be updated to a past or current height, "+
+			"enable height: %d, current height %d",
+			updated.Abci.VoteExtensionsEnableHeight, h)
 	}
+	// 8 (implicit: updated.Abci.VoteExtensionsEnableHeight > h)
+	if params.ABCI.VoteExtensionsEnableHeight <= 0 {
+		return nil
+	}
+	// 9 (implicit: params.ABCI.VoteExtensionsEnableHeight > 0 && updated.Abci.VoteExtensionsEnableHeight > h)
 	if params.ABCI.VoteExtensionsEnableHeight <= h {
-		return fmt.Errorf("VoteExtensionsEnableHeight cannot be modified once"+
-			"the initial height has occurred, "+
-			"initial height: %d, current height %d",
+		return fmt.Errorf("vote extensions cannot be modified once enabled"+
+			"enable height: %d, current height %d",
 			params.ABCI.VoteExtensionsEnableHeight, h)
 	}
+	// 10 (implicit: params.ABCI.VoteExtensionsEnableHeight > h && updated.Abci.VoteExtensionsEnableHeight > h)
 	return nil
 }
 

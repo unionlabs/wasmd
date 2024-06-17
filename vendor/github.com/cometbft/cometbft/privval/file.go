@@ -10,9 +10,7 @@ import (
 	"github.com/cosmos/gogoproto/proto"
 
 	"github.com/cometbft/cometbft/crypto"
-	"github.com/cometbft/cometbft/crypto/bn254"
 	"github.com/cometbft/cometbft/crypto/ed25519"
-	"github.com/cometbft/cometbft/crypto/secp256k1"
 	cmtbytes "github.com/cometbft/cometbft/libs/bytes"
 	cmtjson "github.com/cometbft/cometbft/libs/json"
 	cmtos "github.com/cometbft/cometbft/libs/os"
@@ -180,23 +178,7 @@ func NewFilePV(privKey crypto.PrivKey, keyFilePath, stateFilePath string) *FileP
 // GenFilePV generates a new validator with randomly generated private key
 // and sets the filePaths, but does not call Save().
 func GenFilePV(keyFilePath, stateFilePath string) *FilePV {
-	return GenFilePVCustom(keyFilePath, stateFilePath, types.ABCIPubKeyTypeEd25519)
-}
-
-// GenFilePVCustom generates a new validator with randomly generated private key
-// for the given key type and sets the filePaths, but does not call Save().
-func GenFilePVCustom(keyFilePath, stateFilePath string, keyType string) *FilePV {
-	switch keyType {
-	case types.ABCIPubKeyTypeSecp256k1:
-		return NewFilePV(secp256k1.GenPrivKey(), keyFilePath, stateFilePath)
-	case types.ABCIPubKeyTypeBn254:
-		return NewFilePV(bn254.GenPrivKey(), keyFilePath, stateFilePath)
-	case types.ABCIPubKeyTypeEd25519:
-		return NewFilePV(ed25519.GenPrivKey(), keyFilePath, stateFilePath)
-	default:
-		cmtos.Exit(fmt.Sprintf("Key type: %s is not supported", keyType))
-		return nil
-	}
+	return NewFilePV(ed25519.GenPrivKey(), keyFilePath, stateFilePath)
 }
 
 // LoadFilePV loads a FilePV from the filePaths.  The FilePV handles double
@@ -258,19 +240,6 @@ func LoadOrGenFilePV(keyFilePath, stateFilePath string) *FilePV {
 		pv = LoadFilePV(keyFilePath, stateFilePath)
 	} else {
 		pv = GenFilePV(keyFilePath, stateFilePath)
-		pv.Save()
-	}
-	return pv
-}
-
-// Given a custom signature scheme, LoadOrGenFilePVCustom loads a FilePV from the given filePaths
-// or else generates a new one and saves it to the filePaths.
-func LoadOrGenFilePVCustom(keyFilePath, stateFilePath string, keyType string) *FilePV {
-	var pv *FilePV
-	if cmtos.FileExists(keyFilePath) {
-		pv = LoadFilePV(keyFilePath, stateFilePath)
-	} else {
-		pv = GenFilePVCustom(keyFilePath, stateFilePath, keyType)
 		pv.Save()
 	}
 	return pv
@@ -372,6 +341,11 @@ func (pv *FilePV) signVote(chainID string, vote *cmtproto.Vote) error {
 	if sameHRS {
 		if bytes.Equal(signBytes, lss.SignBytes) {
 			vote.Signature = lss.Signature
+		} else if timestamp, ok := checkVotesOnlyDifferByTimestamp(lss.SignBytes, signBytes); ok {
+			// Compares the canonicalized votes (i.e. without vote extensions
+			// or vote extension signatures).
+			vote.Timestamp = timestamp
+			vote.Signature = lss.Signature
 		} else {
 			err = fmt.Errorf("conflicting data")
 		}
@@ -448,6 +422,28 @@ func (pv *FilePV) saveSigned(height int64, round int32, step int8,
 }
 
 //-----------------------------------------------------------------------------------------
+
+// Returns the timestamp from the lastSignBytes.
+// Returns true if the only difference in the votes is their timestamp.
+// Performs these checks on the canonical votes (excluding the vote extension
+// and vote extension signatures).
+func checkVotesOnlyDifferByTimestamp(lastSignBytes, newSignBytes []byte) (time.Time, bool) {
+	var lastVote, newVote cmtproto.CanonicalVote
+	if err := protoio.UnmarshalDelimited(lastSignBytes, &lastVote); err != nil {
+		panic(fmt.Sprintf("LastSignBytes cannot be unmarshalled into vote: %v", err))
+	}
+	if err := protoio.UnmarshalDelimited(newSignBytes, &newVote); err != nil {
+		panic(fmt.Sprintf("signBytes cannot be unmarshalled into vote: %v", err))
+	}
+
+	lastTime := lastVote.Timestamp
+	// set the times to the same value and check equality
+	now := cmttime.Now()
+	lastVote.Timestamp = now
+	newVote.Timestamp = now
+
+	return lastTime, proto.Equal(&newVote, &lastVote)
+}
 
 // returns the timestamp from the lastSignBytes.
 // returns true if the only difference in the proposals is their timestamp

@@ -388,7 +388,7 @@ github.com/cockroachdb/redact/internal/rfmt/fmtsort
 # github.com/cockroachdb/tokenbucket v0.0.0-20230807174530-cc333fc44b06
 ## explicit; go 1.19
 github.com/cockroachdb/tokenbucket
-# github.com/cometbft/cometbft v0.38.7 => github.com/unionlabs/cometbls v0.0.0-20240310221349-e2d54edc212b
+# github.com/cometbft/cometbft v0.38.7
 ## explicit; go 1.21
 github.com/cometbft/cometbft/abci/client
 github.com/cometbft/cometbft/abci/example/kvstore
@@ -401,7 +401,6 @@ github.com/cometbft/cometbft/consensus
 github.com/cometbft/cometbft/consensus/types
 github.com/cometbft/cometbft/crypto
 github.com/cometbft/cometbft/crypto/batch
-github.com/cometbft/cometbft/crypto/bn254
 github.com/cometbft/cometbft/crypto/ed25519
 github.com/cometbft/cometbft/crypto/encoding
 github.com/cometbft/cometbft/crypto/merkle
@@ -520,18 +519,11 @@ github.com/consensys/gnark/constraint/bn254
 github.com/consensys/gnark/constraint/bw6-633
 github.com/consensys/gnark/constraint/bw6-761
 github.com/consensys/gnark/constraint/solver
-github.com/consensys/gnark/constraint/tinyfield
 github.com/consensys/gnark/debug
-github.com/consensys/gnark/frontend
 github.com/consensys/gnark/frontend/cs
-github.com/consensys/gnark/frontend/cs/r1cs
-github.com/consensys/gnark/frontend/internal/expr
 github.com/consensys/gnark/frontend/schema
 github.com/consensys/gnark/frontend/schema/internal/reflectwalk
 github.com/consensys/gnark/internal/backend/ioutils
-github.com/consensys/gnark/internal/circuitdefer
-github.com/consensys/gnark/internal/frontendtype
-github.com/consensys/gnark/internal/kvstore
 github.com/consensys/gnark/internal/tinyfield
 github.com/consensys/gnark/internal/utils
 github.com/consensys/gnark/io
@@ -540,24 +532,6 @@ github.com/consensys/gnark/profile
 github.com/consensys/gnark/profile/internal/graph
 github.com/consensys/gnark/profile/internal/measurement
 github.com/consensys/gnark/profile/internal/report
-github.com/consensys/gnark/std/algebra/algopts
-github.com/consensys/gnark/std/algebra/emulated/fields_bn254
-github.com/consensys/gnark/std/algebra/emulated/sw_bn254
-github.com/consensys/gnark/std/algebra/emulated/sw_emulated
-github.com/consensys/gnark/std/hash
-github.com/consensys/gnark/std/hash/mimc
-github.com/consensys/gnark/std/hash/sha2
-github.com/consensys/gnark/std/internal/logderivarg
-github.com/consensys/gnark/std/internal/logderivprecomp
-github.com/consensys/gnark/std/math/bits
-github.com/consensys/gnark/std/math/bitslice
-github.com/consensys/gnark/std/math/emulated
-github.com/consensys/gnark/std/math/emulated/emparams
-github.com/consensys/gnark/std/math/uints
-github.com/consensys/gnark/std/multicommit
-github.com/consensys/gnark/std/permutation/sha2
-github.com/consensys/gnark/std/rangecheck
-github.com/consensys/gnark/std/selector
 github.com/consensys/gnark/std/utils/algo_utils
 # github.com/consensys/gnark-crypto v0.12.2-0.20240215234832-d72fcb379d3e => github.com/unionlabs/gnark-crypto v0.0.0-20240112093739-635c1b6963c6
 ## explicit; go 1.19
@@ -568,7 +542,6 @@ github.com/consensys/gnark-crypto/ecc/bls12-377/fr
 github.com/consensys/gnark-crypto/ecc/bls12-377/fr/fft
 github.com/consensys/gnark-crypto/ecc/bls12-377/fr/gkr
 github.com/consensys/gnark-crypto/ecc/bls12-377/fr/hash_to_field
-github.com/consensys/gnark-crypto/ecc/bls12-377/fr/mimc
 github.com/consensys/gnark-crypto/ecc/bls12-377/fr/pedersen
 github.com/consensys/gnark-crypto/ecc/bls12-377/fr/polynomial
 github.com/consensys/gnark-crypto/ecc/bls12-377/fr/sumcheck
@@ -579,7 +552,6 @@ github.com/consensys/gnark-crypto/ecc/bls12-381/fr
 github.com/consensys/gnark-crypto/ecc/bls12-381/fr/fft
 github.com/consensys/gnark-crypto/ecc/bls12-381/fr/gkr
 github.com/consensys/gnark-crypto/ecc/bls12-381/fr/hash_to_field
-github.com/consensys/gnark-crypto/ecc/bls12-381/fr/mimc
 github.com/consensys/gnark-crypto/ecc/bls12-381/fr/pedersen
 github.com/consensys/gnark-crypto/ecc/bls12-381/fr/polynomial
 github.com/consensys/gnark-crypto/ecc/bls12-381/fr/sumcheck
@@ -590,7 +562,6 @@ github.com/consensys/gnark-crypto/ecc/bls24-315/fr
 github.com/consensys/gnark-crypto/ecc/bls24-315/fr/fft
 github.com/consensys/gnark-crypto/ecc/bls24-315/fr/gkr
 github.com/consensys/gnark-crypto/ecc/bls24-315/fr/hash_to_field
-github.com/consensys/gnark-crypto/ecc/bls24-315/fr/mimc
 github.com/consensys/gnark-crypto/ecc/bls24-315/fr/pedersen
 github.com/consensys/gnark-crypto/ecc/bls24-315/fr/polynomial
 github.com/consensys/gnark-crypto/ecc/bls24-315/fr/sumcheck
@@ -601,7 +572,6 @@ github.com/consensys/gnark-crypto/ecc/bls24-317/fr
 github.com/consensys/gnark-crypto/ecc/bls24-317/fr/fft
 github.com/consensys/gnark-crypto/ecc/bls24-317/fr/gkr
 github.com/consensys/gnark-crypto/ecc/bls24-317/fr/hash_to_field
-github.com/consensys/gnark-crypto/ecc/bls24-317/fr/mimc
 github.com/consensys/gnark-crypto/ecc/bls24-317/fr/pedersen
 github.com/consensys/gnark-crypto/ecc/bls24-317/fr/polynomial
 github.com/consensys/gnark-crypto/ecc/bls24-317/fr/sumcheck
@@ -612,19 +582,16 @@ github.com/consensys/gnark-crypto/ecc/bn254/fr
 github.com/consensys/gnark-crypto/ecc/bn254/fr/fft
 github.com/consensys/gnark-crypto/ecc/bn254/fr/gkr
 github.com/consensys/gnark-crypto/ecc/bn254/fr/hash_to_field
-github.com/consensys/gnark-crypto/ecc/bn254/fr/mimc
 github.com/consensys/gnark-crypto/ecc/bn254/fr/pedersen
 github.com/consensys/gnark-crypto/ecc/bn254/fr/polynomial
 github.com/consensys/gnark-crypto/ecc/bn254/fr/sumcheck
 github.com/consensys/gnark-crypto/ecc/bn254/internal/fptower
-github.com/consensys/gnark-crypto/ecc/bn254/signature/bls
 github.com/consensys/gnark-crypto/ecc/bw6-633
 github.com/consensys/gnark-crypto/ecc/bw6-633/fp
 github.com/consensys/gnark-crypto/ecc/bw6-633/fr
 github.com/consensys/gnark-crypto/ecc/bw6-633/fr/fft
 github.com/consensys/gnark-crypto/ecc/bw6-633/fr/gkr
 github.com/consensys/gnark-crypto/ecc/bw6-633/fr/hash_to_field
-github.com/consensys/gnark-crypto/ecc/bw6-633/fr/mimc
 github.com/consensys/gnark-crypto/ecc/bw6-633/fr/pedersen
 github.com/consensys/gnark-crypto/ecc/bw6-633/fr/polynomial
 github.com/consensys/gnark-crypto/ecc/bw6-633/fr/sumcheck
@@ -635,23 +602,17 @@ github.com/consensys/gnark-crypto/ecc/bw6-761/fr
 github.com/consensys/gnark-crypto/ecc/bw6-761/fr/fft
 github.com/consensys/gnark-crypto/ecc/bw6-761/fr/gkr
 github.com/consensys/gnark-crypto/ecc/bw6-761/fr/hash_to_field
-github.com/consensys/gnark-crypto/ecc/bw6-761/fr/mimc
 github.com/consensys/gnark-crypto/ecc/bw6-761/fr/pedersen
 github.com/consensys/gnark-crypto/ecc/bw6-761/fr/polynomial
 github.com/consensys/gnark-crypto/ecc/bw6-761/fr/sumcheck
 github.com/consensys/gnark-crypto/ecc/bw6-761/internal/fptower
-github.com/consensys/gnark-crypto/ecc/secp256k1
-github.com/consensys/gnark-crypto/ecc/secp256k1/fp
-github.com/consensys/gnark-crypto/ecc/secp256k1/fr
 github.com/consensys/gnark-crypto/fiat-shamir
 github.com/consensys/gnark-crypto/field/generator/config
 github.com/consensys/gnark-crypto/field/generator/internal/addchain
-github.com/consensys/gnark-crypto/field/goldilocks
 github.com/consensys/gnark-crypto/field/hash
 github.com/consensys/gnark-crypto/field/pool
 github.com/consensys/gnark-crypto/internal/generator/config
 github.com/consensys/gnark-crypto/internal/parallel
-github.com/consensys/gnark-crypto/signature
 github.com/consensys/gnark-crypto/utils
 # github.com/cosmos/btcutil v1.0.5
 ## explicit; go 1.19
@@ -1504,25 +1465,15 @@ github.com/tendermint/go-amino
 # github.com/tidwall/btree v1.7.0
 ## explicit; go 1.19
 github.com/tidwall/btree
-# github.com/tunabay/go-bitarray v1.3.1
-## explicit; go 1.17
-github.com/tunabay/go-bitarray
 # github.com/ulikunitz/xz v0.5.11
 ## explicit; go 1.12
 github.com/ulikunitz/xz
 github.com/ulikunitz/xz/internal/hash
 github.com/ulikunitz/xz/internal/xlog
 github.com/ulikunitz/xz/lzma
-# github.com/unionlabs/union/11-cometbls v0.0.0-20240614121153-6ccb83d6bd30
+# github.com/unionlabs/union/11-cometbls v0.0.0-20240715130010-ed2fe26bf106
 ## explicit; go 1.21
 github.com/unionlabs/union/11-cometbls
-# github.com/unionlabs/union/galoisd v0.0.0-20240614104816-a49fb19d57cd
-## explicit; go 1.21
-github.com/unionlabs/union/galoisd/pkg/bls
-github.com/unionlabs/union/galoisd/pkg/emulated
-github.com/unionlabs/union/galoisd/pkg/lightclient
-github.com/unionlabs/union/galoisd/pkg/lightclient/nonadjacent
-github.com/unionlabs/union/galoisd/pkg/merkle
 # github.com/x448/float16 v0.8.4
 ## explicit; go 1.11
 github.com/x448/float16
@@ -1873,7 +1824,6 @@ rsc.io/tmplfunc/internal/parse
 sigs.k8s.io/yaml
 sigs.k8s.io/yaml/goyaml.v2
 # github.com/99designs/keyring => github.com/cosmos/keyring v1.2.0
-# github.com/cometbft/cometbft => github.com/unionlabs/cometbls v0.0.0-20240310221349-e2d54edc212b
 # github.com/consensys/gnark-crypto => github.com/unionlabs/gnark-crypto v0.0.0-20240112093739-635c1b6963c6
 # github.com/dgrijalva/jwt-go => github.com/golang-jwt/jwt/v4 v4.4.2
 # github.com/gin-gonic/gin => github.com/gin-gonic/gin v1.8.1

@@ -22,8 +22,8 @@ func shouldBatchVerify(vals *ValidatorSet, commit *Commit) bool {
 // application that depends on the LastCommitInfo sent in FinalizeBlock, which
 // includes which validators signed. For instance, Gaia incentivizes proposers
 // with a bonus for including more than +2/3 of the signatures.
-func verifyCommit(chainID string, vals *ValidatorSet, blockID BlockID,
-	height int64, commit *Commit, isLegacy bool) error {
+func VerifyCommit(chainID string, vals *ValidatorSet, blockID BlockID,
+	height int64, commit *Commit) error {
 	// run a basic validation of the arguments
 	if err := verifyBasicValsAndCommit(vals, commit, height, blockID); err != nil {
 		return err
@@ -42,37 +42,51 @@ func verifyCommit(chainID string, vals *ValidatorSet, blockID BlockID,
 	// attempt to batch verify
 	if shouldBatchVerify(vals, commit) {
 		return verifyCommitBatch(chainID, vals, commit,
-			votingPowerNeeded, ignore, count, true, true, isLegacy)
+			votingPowerNeeded, ignore, count, true, true)
 	}
 
 	// if verification failed or is not supported then fallback to single verification
 	return verifyCommitSingle(chainID, vals, commit, votingPowerNeeded,
-		ignore, count, true, true, isLegacy)
-}
-
-func VerifyCommit(chainID string, vals *ValidatorSet, blockID BlockID,
-	height int64, commit *Commit) error {
-	return verifyCommit(chainID, vals, blockID, height, commit, false)
-}
-
-// Wrapper around verifyCommit for CometBFT
-//
-// NOTE: If you are targeting Tendermint/CometBFT for any purpose (eg. lightclients)
-// use this function, otherwise the `CanonicalVote` that is signed will be different
-// and your verification won't pass.
-func VerifyCommitLegacy(chainID string, vals *ValidatorSet, blockID BlockID,
-	height int64, commit *Commit) error {
-	return verifyCommit(chainID, vals, blockID, height, commit, true)
+		ignore, count, true, true)
 }
 
 // LIGHT CLIENT VERIFICATION METHODS
 
 // VerifyCommitLight verifies +2/3 of the set had signed the given commit.
 //
-// This method is primarily used by the light client and does not check all the
+// This method is primarily used by the light client and does NOT check all the
 // signatures.
-func verifyCommitLight(chainID string, vals *ValidatorSet, blockID BlockID,
-	height int64, commit *Commit, isLegacy bool) error {
+func VerifyCommitLight(
+	chainID string,
+	vals *ValidatorSet,
+	blockID BlockID,
+	height int64,
+	commit *Commit,
+) error {
+	return verifyCommitLightInternal(chainID, vals, blockID, height, commit, false)
+}
+
+// VerifyCommitLightAllSignatures verifies +2/3 of the set had signed the given commit.
+//
+// This method DOES check all the signatures.
+func VerifyCommitLightAllSignatures(
+	chainID string,
+	vals *ValidatorSet,
+	blockID BlockID,
+	height int64,
+	commit *Commit,
+) error {
+	return verifyCommitLightInternal(chainID, vals, blockID, height, commit, true)
+}
+
+func verifyCommitLightInternal(
+	chainID string,
+	vals *ValidatorSet,
+	blockID BlockID,
+	height int64,
+	commit *Commit,
+	countAllSignatures bool,
+) error {
 	// run a basic validation of the arguments
 	if err := verifyBasicValsAndCommit(vals, commit, height, blockID); err != nil {
 		return err
@@ -90,22 +104,12 @@ func verifyCommitLight(chainID string, vals *ValidatorSet, blockID BlockID,
 	// attempt to batch verify
 	if shouldBatchVerify(vals, commit) {
 		return verifyCommitBatch(chainID, vals, commit,
-			votingPowerNeeded, ignore, count, false, true, isLegacy)
+			votingPowerNeeded, ignore, count, countAllSignatures, true)
 	}
 
 	// if verification failed or is not supported then fallback to single verification
 	return verifyCommitSingle(chainID, vals, commit, votingPowerNeeded,
-		ignore, count, false, true, isLegacy)
-}
-
-func VerifyCommitLight(chainID string, vals *ValidatorSet, blockID BlockID,
-	height int64, commit *Commit) error {
-	return verifyCommitLight(chainID, vals, blockID, height, commit, false)
-}
-
-func VerifyCommitLightLegacy(chainID string, vals *ValidatorSet, blockID BlockID,
-	height int64, commit *Commit) error {
-	return verifyCommitLight(chainID, vals, blockID, height, commit, true)
+		ignore, count, countAllSignatures, true)
 }
 
 // VerifyCommitLightTrusting verifies that trustLevel of the validator set signed
@@ -114,9 +118,40 @@ func VerifyCommitLightLegacy(chainID string, vals *ValidatorSet, blockID BlockID
 // NOTE the given validators do not necessarily correspond to the validator set
 // for this commit, but there may be some intersection.
 //
-// This method is primarily used by the light client and does not check all the
+// This method is primarily used by the light client and does NOT check all the
 // signatures.
-func verifyCommitLightTrusting(chainID string, vals *ValidatorSet, commit *Commit, trustLevel cmtmath.Fraction, isLegacy bool) error {
+func VerifyCommitLightTrusting(
+	chainID string,
+	vals *ValidatorSet,
+	commit *Commit,
+	trustLevel cmtmath.Fraction,
+) error {
+	return verifyCommitLightTrustingInternal(chainID, vals, commit, trustLevel, false)
+}
+
+// VerifyCommitLightTrustingAllSignatures verifies that trustLevel of the validator
+// set signed this commit.
+//
+// NOTE the given validators do not necessarily correspond to the validator set
+// for this commit, but there may be some intersection.
+//
+// This method DOES check all the signatures.
+func VerifyCommitLightTrustingAllSignatures(
+	chainID string,
+	vals *ValidatorSet,
+	commit *Commit,
+	trustLevel cmtmath.Fraction,
+) error {
+	return verifyCommitLightTrustingInternal(chainID, vals, commit, trustLevel, true)
+}
+
+func verifyCommitLightTrustingInternal(
+	chainID string,
+	vals *ValidatorSet,
+	commit *Commit,
+	trustLevel cmtmath.Fraction,
+	countAllSignatures bool,
+) error {
 	// sanity checks
 	if vals == nil {
 		return errors.New("nil validator set")
@@ -146,25 +181,12 @@ func verifyCommitLightTrusting(chainID string, vals *ValidatorSet, commit *Commi
 	// up by address rather than index.
 	if shouldBatchVerify(vals, commit) {
 		return verifyCommitBatch(chainID, vals, commit,
-			votingPowerNeeded, ignore, count, false, false, isLegacy)
+			votingPowerNeeded, ignore, count, countAllSignatures, false)
 	}
 
 	// attempt with single verification
 	return verifyCommitSingle(chainID, vals, commit, votingPowerNeeded,
-		ignore, count, false, false, isLegacy)
-}
-
-func VerifyCommitLightTrusting(chainID string, vals *ValidatorSet, commit *Commit, trustLevel cmtmath.Fraction) error {
-	return verifyCommitLightTrusting(chainID, vals, commit, trustLevel, false)
-}
-
-// Wrapper around verifyCommitLightTrusting for CometBFT
-//
-// NOTE: If you are targeting Tendermint/CometBFT for any purpose (eg. lightclients)
-// use this function, otherwise the `CanonicalVote` that is signed will be different
-// and your verification won't pass.
-func VerifyCommitLightTrustingLegacy(chainID string, vals *ValidatorSet, commit *Commit, trustLevel cmtmath.Fraction) error {
-	return verifyCommitLightTrusting(chainID, vals, commit, trustLevel, true)
+		ignore, count, countAllSignatures, false)
 }
 
 // ValidateHash returns an error if the hash is not empty, but its
@@ -196,7 +218,6 @@ func verifyCommitBatch(
 	countSig func(CommitSig) bool,
 	countAllSignatures bool,
 	lookUpByIndex bool,
-	isLegacy bool,
 ) error {
 	var (
 		val                *Validator
@@ -242,12 +263,7 @@ func verifyCommitBatch(
 		}
 
 		// Validate signature.
-		var voteSignBytes []byte
-		if !isLegacy {
-			voteSignBytes = commit.VoteSignBytes(chainID, int32(idx))
-		} else {
-			voteSignBytes = commit.VoteSignBytesLegacy(chainID, int32(idx))
-		}
+		voteSignBytes := commit.VoteSignBytes(chainID, int32(idx))
 
 		// add the key, sig and message to the verifier
 		if err := bv.Add(val.PubKey, voteSignBytes, commitSig.Signature); err != nil {
@@ -315,7 +331,6 @@ func verifyCommitSingle(
 	countSig func(CommitSig) bool,
 	countAllSignatures bool,
 	lookUpByIndex bool,
-	isLegacy bool,
 ) error {
 	var (
 		val                *Validator
@@ -329,7 +344,11 @@ func verifyCommitSingle(
 			continue
 		}
 
-		// If the vals and commit have a 1-to-1 correspondance we can retrieve
+		if commitSig.ValidateBasic() != nil {
+			return fmt.Errorf("invalid signatures from %v at index %d", val, idx)
+		}
+
+		// If the vals and commit have a 1-to-1 correspondence we can retrieve
 		// them by index else we need to retrieve them by address
 		if lookUpByIndex {
 			val = vals.Validators[idx]
@@ -351,11 +370,11 @@ func verifyCommitSingle(
 			seenVals[valIdx] = idx
 		}
 
-		if !isLegacy {
-			voteSignBytes = commit.VoteSignBytes(chainID, int32(idx))
-		} else {
-			voteSignBytes = commit.VoteSignBytesLegacy(chainID, int32(idx))
+		if val.PubKey == nil {
+			return fmt.Errorf("validator %v has a nil PubKey at index %d", val, idx)
 		}
+
+		voteSignBytes = commit.VoteSignBytes(chainID, int32(idx))
 
 		if !val.PubKey.VerifySignature(voteSignBytes, commitSig.Signature) {
 			return fmt.Errorf("wrong signature (#%d): %X", idx, commitSig.Signature)
