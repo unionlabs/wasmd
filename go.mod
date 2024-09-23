@@ -46,7 +46,6 @@ require (
 	github.com/cometbft/cometbft v0.38.12
 	github.com/cosmos/cosmos-db v1.0.2
 	github.com/cosmos/ibc-go/modules/apps/callbacks 11e5c511fbae4ff96d9e7bc531333770ed2c6165
-	github.com/cosmos/ibc-go/modules/capability 11e5c511fbae4ff96d9e7bc531333770ed2c6165
 	github.com/distribution/reference v0.5.0
 	github.com/rs/zerolog v1.33.0
 	github.com/spf13/viper v1.19.0
