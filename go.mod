@@ -45,9 +45,8 @@ require (
 	cosmossdk.io/x/upgrade v0.1.4
 	github.com/cometbft/cometbft v0.38.12
 	github.com/cosmos/cosmos-db v1.0.2
-	github.com/cosmos/ibc-go/modules/apps/callbacks 2ee55486da3dc1378e3e25262e1858367e3a1c42
-	github.com/cosmos/ibc-go/modules/capability 2ee55486da3dc1378e3e25262e1858367e3a1c42
-	github.com/cosmos/ibc-go/v9 2ee55486da3dc1378e3e25262e1858367e3a1c42
+	github.com/cosmos/ibc-go/modules/apps/callbacks 11e5c511fbae4ff96d9e7bc531333770ed2c6165
+	github.com/cosmos/ibc-go/modules/capability 11e5c511fbae4ff96d9e7bc531333770ed2c6165
 	github.com/distribution/reference v0.5.0
 	github.com/rs/zerolog v1.33.0
 	github.com/spf13/viper v1.19.0
@@ -228,7 +227,6 @@ replace (
 	github.com/cosmos/cosmos-sdk => github.com/cosmos/cosmos-sdk 9e7848985491a0914fd73d38c466f664827fb0aa
 	cosmossdk.io/api => cosmossdk.io/api v0.7.3-0.20240815194237-858ec2fcb897
 	cosmossdk.io/core => cosmossdk.io/core v1.0.0-alpha.1
-	github.com/cosmos/ibc-go/v9 => github.com/cosmos/ibc-go/v9 2ee55486da3dc1378e3e25262e1858367e3a1c42
 	cosmossdk.io/tools/confix => github.com/unionlabs/cosmos-sdk-union/tools/confix 5c3e8670172d012e0c727c9cdac2c2d7ddc4382d
 	cosmossdk.io/x/accounts => github.com/unionlabs/cosmos-sdk-union/x/accounts 5c3e8670172d012e0c727c9cdac2c2d7ddc4382d
 	cosmossdk.io/x/accounts/defaults/lockup => github.com/unionlabs/cosmos-sdk-union/x/accounts/defaults/lockup 5c3e8670172d012e0c727c9cdac2c2d7ddc4382d

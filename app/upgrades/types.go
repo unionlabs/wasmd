@@ -11,9 +11,9 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/types/module"
-	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
-	consensusparamkeeper "github.com/cosmos/cosmos-sdk/x/consensus/keeper"
-	paramskeeper "github.com/cosmos/cosmos-sdk/x/params/keeper"
+	authkeeper "cosmossdk.io/x/auth/keeper"
+	consensusparamkeeper "cosmossdk.io/x/consensus/keeper"
+	paramskeeper "cosmossdk.io/x/params/keeper"
 )
 
 type AppKeepers struct {
