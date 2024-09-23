@@ -31,7 +31,7 @@ require (
 	cosmossdk.io/api v0.7.5
 	cosmossdk.io/client/v2 v2.0.0-beta.1
 	cosmossdk.io/collections v0.4.0
-	cosmossdk.io/core v0.11.1
+	cosmossdk.io/core v1.0.0-alpha.1
 	cosmossdk.io/errors v1.0.1
 	cosmossdk.io/log v1.4.1
 	cosmossdk.io/math v1.3.0
@@ -45,9 +45,9 @@ require (
 	cosmossdk.io/x/upgrade v0.1.4
 	github.com/cometbft/cometbft v0.38.12
 	github.com/cosmos/cosmos-db v1.0.2
-	github.com/cosmos/ibc-go/modules/apps/callbacks v0.2.1-0.20231113120333-342c00b0f8bd
-	github.com/cosmos/ibc-go/modules/capability v1.0.1
-	github.com/cosmos/ibc-go/v8 v8.4.0
+	github.com/cosmos/ibc-go/modules/apps/callbacks 2ee55486da3dc1378e3e25262e1858367e3a1c42
+	github.com/cosmos/ibc-go/modules/capability 2ee55486da3dc1378e3e25262e1858367e3a1c42
+	github.com/cosmos/ibc-go/v9 2ee55486da3dc1378e3e25262e1858367e3a1c42
 	github.com/distribution/reference v0.5.0
 	github.com/rs/zerolog v1.33.0
 	github.com/spf13/viper v1.19.0
@@ -223,6 +223,34 @@ replace (
 
 	// pin version! 126854af5e6d has issues with the store so that queries fail
 	github.com/syndtr/goleveldb => github.com/syndtr/goleveldb v1.0.1-0.20210819022825-2ae1ddf74ef7
+
+	// Cosmos SDK v0.52
+	github.com/cosmos/cosmos-sdk => github.com/cosmos/cosmos-sdk 9e7848985491a0914fd73d38c466f664827fb0aa
+	cosmossdk.io/api => cosmossdk.io/api v0.7.3-0.20240815194237-858ec2fcb897
+	cosmossdk.io/core => cosmossdk.io/core v1.0.0-alpha.1
+	github.com/cosmos/ibc-go/v9 => github.com/cosmos/ibc-go/v9 2ee55486da3dc1378e3e25262e1858367e3a1c42
+	cosmossdk.io/tools/confix => github.com/unionlabs/cosmos-sdk-union/tools/confix 5c3e8670172d012e0c727c9cdac2c2d7ddc4382d
+	cosmossdk.io/x/accounts => github.com/unionlabs/cosmos-sdk-union/x/accounts 5c3e8670172d012e0c727c9cdac2c2d7ddc4382d
+	cosmossdk.io/x/accounts/defaults/lockup => github.com/unionlabs/cosmos-sdk-union/x/accounts/defaults/lockup 5c3e8670172d012e0c727c9cdac2c2d7ddc4382d
+	cosmossdk.io/x/accounts/defaults/multisig => github.com/unionlabs/cosmos-sdk-union/x/accounts/defaults/multisig 5c3e8670172d012e0c727c9cdac2c2d7ddc4382d
+	cosmossdk.io/x/authz => github.com/unionlabs/cosmos-sdk-union/x/authz 5c3e8670172d012e0c727c9cdac2c2d7ddc4382d
+	cosmossdk.io/x/bank => github.com/unionlabs/cosmos-sdk-union/x/bank 5c3e8670172d012e0c727c9cdac2c2d7ddc4382d
+	cosmossdk.io/x/circuit => github.com/unionlabs/cosmos-sdk-union/x/circuit 5c3e8670172d012e0c727c9cdac2c2d7ddc4382d
+	cosmossdk.io/x/consensus => github.com/unionlabs/cosmos-sdk-union/x/consensus 5c3e8670172d012e0c727c9cdac2c2d7ddc4382d
+	cosmossdk.io/x/distribution => github.com/unionlabs/cosmos-sdk-union/x/distribution  5c3e8670172d012e0c727c9cdac2c2d7ddc4382d
+	cosmossdk.io/x/epochs => github.com/unionlabs/cosmos-sdk-union/x/epochs 5c3e8670172d012e0c727c9cdac2c2d7ddc4382d
+	cosmossdk.io/x/evidence => github.com/unionlabs/cosmos-sdk-union/x/evidence 5c3e8670172d012e0c727c9cdac2c2d7ddc4382d
+	cosmossdk.io/x/feegrant => github.com/unionlabs/cosmos-sdk-union/x/feegrant 5c3e8670172d012e0c727c9cdac2c2d7ddc4382d
+	cosmossdk.io/x/gov => github.com/unionlabs/cosmos-sdk-union/x/gov 5c3e8670172d012e0c727c9cdac2c2d7ddc4382d
+	cosmossdk.io/x/group => github.com/unionlabs/cosmos-sdk-union/x/group 5c3e8670172d012e0c727c9cdac2c2d7ddc4382d
+	cosmossdk.io/x/mint => github.com/unionlabs/cosmos-sdk-union/x/mint 5c3e8670172d012e0c727c9cdac2c2d7ddc4382d
+	cosmossdk.io/x/nft => github.com/unionlabs/cosmos-sdk-union/x/nft 5c3e8670172d012e0c727c9cdac2c2d7ddc4382d
+	cosmossdk.io/x/params => github.com/unionlabs/cosmos-sdk-union/x/params 5c3e8670172d012e0c727c9cdac2c2d7ddc4382d
+	cosmossdk.io/x/protocolpool => github.com/unionlabs/cosmos-sdk-union/x/protocolpool 5c3e8670172d012e0c727c9cdac2c2d7ddc4382d
+	cosmossdk.io/x/slashing => github.com/unionlabs/cosmos-sdk-union/x/slashing 5c3e8670172d012e0c727c9cdac2c2d7ddc4382d
+	cosmossdk.io/x/staking => github.com/unionlabs/cosmos-sdk-union/x/staking 5c3e8670172d012e0c727c9cdac2c2d7ddc4382d
+	cosmossdk.io/client/v2 => github.com/unionlabs/cosmos-sdk-union/client/v2 5c3e8670172d012e0c727c9cdac2c2d7ddc4382d
+
 )
 
 retract (
