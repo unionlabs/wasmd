@@ -5,7 +5,7 @@ import (
 	"time"
 
 	abci "github.com/cometbft/cometbft/abci/types"
-	"github.com/cometbft/cometbft/libs/rand"
+	"cosmossdk.io/math/unsafe"
 	"github.com/cosmos/gogoproto/proto"
 	icacontrollertypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/controller/types"
 	hosttypes "github.com/cosmos/ibc-go/v8/modules/apps/27-interchain-accounts/host/types"

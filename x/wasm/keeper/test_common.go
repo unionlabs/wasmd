@@ -11,8 +11,8 @@ import (
 
 	"github.com/cometbft/cometbft/crypto"
 	"github.com/cometbft/cometbft/crypto/ed25519"
-	"github.com/cometbft/cometbft/libs/rand"
-	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
+	"cosmossdk.io/math/unsafe"
+	tmproto "github.com/cometbft/cometbft/api/cometbft/types/v1"
 	dbm "github.com/cosmos/cosmos-db"
 	"github.com/cosmos/ibc-go/modules/capability"
 	capabilitykeeper "github.com/cosmos/ibc-go/modules/capability/keeper"
@@ -37,11 +37,11 @@ import (
 	upgradekeeper "cosmossdk.io/x/upgrade/keeper"
 	upgradetypes "cosmossdk.io/x/upgrade/types"
 
-	"cosmossdk.io/x/auth"
-	authcodec "cosmossdk.io/x/auth/codec"
-	authkeeper "cosmossdk.io/x/auth/keeper"
-	authtypes "cosmossdk.io/x/auth/types"
-	"cosmossdk.io/x/auth/vesting"
+	"github.com/cosmos/cosmos-sdk/x/auth"
+	authcodec "github.com/cosmos/cosmos-sdk/x/auth/codec"
+	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
+	"github.com/cosmos/cosmos-sdk/x/auth/vesting"
 	authzkeeper "cosmossdk.io/x/authz/keeper"
 	"cosmossdk.io/x/bank"
 	bankkeeper "cosmossdk.io/x/bank/keeper"
@@ -74,8 +74,6 @@ import (
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/types/module"
 	moduletestutil "github.com/cosmos/cosmos-sdk/types/module/testutil"
-	"github.com/cosmos/cosmos-sdk/x/crisis"
-	crisistypes "github.com/cosmos/cosmos-sdk/x/crisis/types"
 
 	"github.com/CosmWasm/wasmd/x/wasm/keeper/testdata"
 	"github.com/CosmWasm/wasmd/x/wasm/keeper/wasmtesting"
@@ -93,7 +91,6 @@ var moduleBasics = module.NewBasicManager(
 		paramsclient.ProposalHandler,
 	}),
 	params.AppModuleBasic{},
-	crisis.AppModuleBasic{},
 	slashing.AppModuleBasic{},
 	ibc.AppModuleBasic{},
 	upgrade.AppModuleBasic{},
@@ -114,7 +111,6 @@ func MakeEncodingConfig(_ testing.TB) moduletestutil.TestEncodingConfig {
 		mint.AppModule{},
 		slashing.AppModule{},
 		gov.AppModule{},
-		crisis.AppModule{},
 		ibc.AppModule{},
 		transfer.AppModule{},
 		vesting.AppModule{},
@@ -273,7 +269,6 @@ func createTestInput(
 		minttypes.ModuleName,
 		distributiontypes.ModuleName,
 		slashingtypes.ModuleName,
-		crisistypes.ModuleName,
 		ibctransfertypes.ModuleName,
 		capabilitytypes.ModuleName,
 		ibcexported.ModuleName,

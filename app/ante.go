@@ -11,7 +11,7 @@ import (
 	circuitkeeper "cosmossdk.io/x/circuit/keeper"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	"cosmossdk.io/x/auth/ante"
+	"github.com/cosmos/cosmos-sdk/x/auth/ante"
 
 	wasmkeeper "github.com/CosmWasm/wasmd/x/wasm/keeper"
 	wasmTypes "github.com/CosmWasm/wasmd/x/wasm/types"

@@ -202,7 +202,7 @@ func InstantiateContractCmd() *cobra.Command {
 Each contract instance has a unique address assigned.
 Example:
 $ %s tx wasm instantiate 1 '{"foo":"bar"}' --admin="$(%s keys show mykey -a)" \
-  --from mykey --amount="100ustake" --label "local0.1.0" 
+  --from mykey --amount="100ustake" --label "local0.1.0"
 `, version.AppName, version.AppName),
 		Aliases: []string{"start", "init", "inst", "i"},
 		Args:    cobra.ExactArgs(2),
@@ -236,13 +236,13 @@ func InstantiateContract2Cmd() *cobra.Command {
 			"--fix-msg [bool,optional]",
 		Short: "Instantiate a wasm contract with predictable address",
 		Long: fmt.Sprintf(`Creates a new instance of an uploaded wasm code with the given 'constructor' message.
-Each contract instance has a unique address assigned. They are assigned automatically but in order to have predictable addresses 
+Each contract instance has a unique address assigned. They are assigned automatically but in order to have predictable addresses
 for special use cases, the given 'salt' argument and '--fix-msg' parameters can be used to generate a custom address.
 
 Predictable address example (also see '%s query wasm build-address -h'):
 $ %s tx wasm instantiate2 1 '{"foo":"bar"}' $(echo -n "testing" | xxd -ps) --admin="$(%s keys show mykey -a)" \
   --from mykey --amount="100ustake" --label "local0.1.0" \
-   --fix-msg 
+   --fix-msg
 `, version.AppName, version.AppName, version.AppName),
 		Aliases: []string{"start", "init", "inst", "i"},
 		Args:    cobra.ExactArgs(3),

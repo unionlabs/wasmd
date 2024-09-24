@@ -14,7 +14,7 @@ import (
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	"github.com/cosmos/cosmos-sdk/crypto/keys/secp256k1"
 	sdk "github.com/cosmos/cosmos-sdk/types"
-	authkeeper "cosmossdk.io/x/auth/keeper"
+	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 	bankkeeper "cosmossdk.io/x/bank/keeper"
 	distributionkeeper "cosmossdk.io/x/distribution/keeper"
 	stakingkeeper "cosmossdk.io/x/staking/keeper"

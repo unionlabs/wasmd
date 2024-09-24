@@ -10,7 +10,7 @@ import (
 
 	errorsmod "cosmossdk.io/errors"
 
-	"cosmossdk.io/x/auth/tx"
+	"github.com/cosmos/cosmos-sdk/x/auth/tx"
 	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"

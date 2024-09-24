@@ -16,9 +16,9 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/tx/signing"
 	"github.com/cosmos/cosmos-sdk/version"
-	"cosmossdk.io/x/auth/tx"
-	txmodule "cosmossdk.io/x/auth/tx/config"
-	authtypes "cosmossdk.io/x/auth/types"
+	"github.com/cosmos/cosmos-sdk/x/auth/tx"
+	txmodule "github.com/cosmos/cosmos-sdk/x/auth/tx/config"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 
 	"github.com/CosmWasm/wasmd/app"
 	"github.com/CosmWasm/wasmd/app/params"

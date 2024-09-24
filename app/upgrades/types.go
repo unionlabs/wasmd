@@ -11,7 +11,7 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	"github.com/cosmos/cosmos-sdk/types/module"
-	authkeeper "cosmossdk.io/x/auth/keeper"
+	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 	consensusparamkeeper "cosmossdk.io/x/consensus/keeper"
 	paramskeeper "cosmossdk.io/x/params/keeper"
 )

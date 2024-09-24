@@ -36,7 +36,7 @@ import (
 	simtestutil "github.com/cosmos/cosmos-sdk/testutil/sims"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module/testutil"
-	authtypes "cosmossdk.io/x/auth/types"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	banktypes "cosmossdk.io/x/bank/types"
 	minttypes "cosmossdk.io/x/mint/types"
 	slashingtypes "cosmossdk.io/x/slashing/types"

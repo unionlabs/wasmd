@@ -8,7 +8,7 @@ import (
 	"time"
 
 	wasmvmtypes "github.com/CosmWasm/wasmvm/v2/types"
-	"github.com/cometbft/cometbft/libs/rand"
+	"cosmossdk.io/math/unsafe"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 

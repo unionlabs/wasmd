@@ -15,7 +15,7 @@ import (
 	"cosmossdk.io/log"
 	confixcmd "cosmossdk.io/tools/confix/cmd"
 
-	authcmd "cosmossdk.io/x/auth/client/cli"
+	authcmd "github.com/cosmos/cosmos-sdk/x/auth/client/cli"
 	banktypes "cosmossdk.io/x/bank/types"
 	"github.com/cosmos/cosmos-sdk/client"
 	"github.com/cosmos/cosmos-sdk/client/debug"
@@ -31,7 +31,6 @@ import (
 	servertypes "github.com/cosmos/cosmos-sdk/server/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/module"
-	"github.com/cosmos/cosmos-sdk/x/crisis"
 	genutilcli "github.com/cosmos/cosmos-sdk/x/genutil/client/cli"
 
 	"github.com/CosmWasm/wasmd/app"
@@ -126,7 +125,6 @@ func initRootCmd(
 }
 
 func addModuleInitFlags(startCmd *cobra.Command) {
-	crisis.AddModuleInitFlags(startCmd)
 	wasm.AddModuleInitFlags(startCmd)
 }
 

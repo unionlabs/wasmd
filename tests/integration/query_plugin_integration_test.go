@@ -12,7 +12,7 @@ import (
 
 	wasmvmtypes "github.com/CosmWasm/wasmvm/v2/types"
 	"github.com/cometbft/cometbft/crypto/ed25519"
-	cmtproto "github.com/cometbft/cometbft/proto/tendermint/types"
+	cmtproto "github.com/cometbft/cometbft/api/cometbft/types/v1"
 	"github.com/cosmos/gogoproto/proto"
 	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
 	"github.com/stretchr/testify/assert"
@@ -25,7 +25,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
 	"github.com/cosmos/cosmos-sdk/types/query"
-	authtypes "cosmossdk.io/x/auth/types"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	banktypes "cosmossdk.io/x/bank/types"
 	stakingtypes "cosmossdk.io/x/staking/types"
 

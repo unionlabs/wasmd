@@ -13,7 +13,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/cometbft/cometbft/libs/rand"
+	"cosmossdk.io/math/unsafe"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/address"
@@ -106,12 +106,12 @@ func initSDKConfig(bech32Prefix string) {
 
 const (
 	successFlag = `
- ___ _   _  ___ ___ ___  ___ ___ 
+ ___ _   _  ___ ___ ___  ___ ___
 / __| | | |/ __/ __/ _ \/ __/ __|
 \__ \ |_| | (_| (_|  __/\__ \__ \
 |___/\__,_|\___\___\___||___/___/`
 	failureFlag = `
-  __      _ _          _ 
+  __      _ _          _
  / _|    (_) |        | |
 | |_ __ _ _| | ___  __| |
 |  _/ _| | | |/ _ \/ _| |
@@ -128,7 +128,7 @@ func printResultFlag(ok bool) {
 }
 
 func randomBech32Addr() string {
-	src := rand.Bytes(address.Len)
+	src := unsafe.Bytes(address.Len)
 	return sdk.AccAddress(src).String()
 }
 

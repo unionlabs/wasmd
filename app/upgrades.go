@@ -5,7 +5,7 @@ import (
 
 	upgradetypes "cosmossdk.io/x/upgrade/types"
 
-	authtypes "cosmossdk.io/x/auth/types"
+	authtypes "github.com/cosmos/cosmos-sdk/x/auth/types"
 	banktypes "cosmossdk.io/x/bank/types"
 	distrtypes "cosmossdk.io/x/distribution/types"
 	govtypes "cosmossdk.io/x/gov/types"
@@ -16,7 +16,6 @@ import (
 	slashingtypes "cosmossdk.io/x/slashing/types"
 	stakingtypes "cosmossdk.io/x/staking/types"
 	"github.com/cosmos/cosmos-sdk/baseapp"
-	crisistypes "github.com/cosmos/cosmos-sdk/x/crisis/types"
 
 	"github.com/CosmWasm/wasmd/app/upgrades"
 	"github.com/CosmWasm/wasmd/app/upgrades/noop"
@@ -96,8 +95,6 @@ func setupLegacyKeyTables(k *paramskeeper.Keeper) {
 			keyTable = slashingtypes.ParamKeyTable() //nolint:staticcheck
 		case govtypes.ModuleName:
 			keyTable = govv1.ParamKeyTable() //nolint:staticcheck
-		case crisistypes.ModuleName:
-			keyTable = crisistypes.ParamKeyTable() //nolint:staticcheck
 			// wasm
 		case wasmtypes.ModuleName:
 			keyTable = v2.ParamKeyTable() //nolint:staticcheck

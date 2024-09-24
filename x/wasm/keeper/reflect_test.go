@@ -16,7 +16,7 @@ import (
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	sdkerrors "github.com/cosmos/cosmos-sdk/types/errors"
-	authkeeper "cosmossdk.io/x/auth/keeper"
+	authkeeper "github.com/cosmos/cosmos-sdk/x/auth/keeper"
 	bankkeeper "cosmossdk.io/x/bank/keeper"
 	banktypes "cosmossdk.io/x/bank/types"
 

@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	wasmvmtypes "github.com/CosmWasm/wasmvm/v2/types"
-	cmtproto "github.com/cometbft/cometbft/proto/tendermint/types"
+	cmtproto "github.com/cometbft/cometbft/api/cometbft/types/v1"
 	dbm "github.com/cosmos/cosmos-db"
 	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
 	"github.com/stretchr/testify/assert"
