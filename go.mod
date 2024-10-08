@@ -11,7 +11,6 @@ require (
 	github.com/cosmos/iavl v1.3.0
 	github.com/cosmos/ics23/go v0.11.0 // indirect
 	github.com/dvsekhvalnov/jose2go v1.6.0 // indirect
-	github.com/golang/protobuf v1.5.4
 	github.com/google/gofuzz v1.2.0
 	github.com/gorilla/mux v1.8.1 // indirect
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0
@@ -24,6 +23,7 @@ require (
 	github.com/syndtr/goleveldb v1.0.1-0.20220721030215-126854af5e6d
 	google.golang.org/genproto v0.0.0-20240701130421-f6361c86f094 // indirect
 	google.golang.org/grpc v1.66.2
+	google.golang.org/protobuf v1.34.2 // indirect
 	gopkg.in/yaml.v2 v2.4.0
 )
 
@@ -51,7 +51,7 @@ require (
 	cosmossdk.io/x/params v0.0.0-00010101000000-000000000000
 	cosmossdk.io/x/slashing v0.0.0-00010101000000-000000000000
 	cosmossdk.io/x/staking v0.0.0-00010101000000-000000000000
-	cosmossdk.io/x/tx v0.13.5
+	cosmossdk.io/x/tx v0.13.4
 	cosmossdk.io/x/upgrade v0.1.4
 	github.com/cometbft/cometbft v1.0.0-rc1.0.20240908111210-ab0be101882f
 	github.com/cometbft/cometbft/api v1.0.0-rc.1
@@ -60,6 +60,7 @@ require (
 	github.com/cosmos/ibc-go/modules/capability v1.0.1
 	github.com/cosmos/ibc-go/v8 v8.0.0
 	github.com/distribution/reference v0.5.0
+	github.com/golang/protobuf v1.5.4
 	github.com/rs/zerolog v1.33.0
 	github.com/spf13/viper v1.19.0
 	google.golang.org/genproto/googleapis/api v0.0.0-20240701130421-f6361c86f094
@@ -77,6 +78,9 @@ require (
 	cosmossdk.io/core/testing v0.0.0-20240909133312-50288938d1b6 // indirect
 	cosmossdk.io/depinject v1.0.0 // indirect
 	cosmossdk.io/schema v0.3.0 // indirect
+	cosmossdk.io/x/accounts v0.1.1 // indirect
+	cosmossdk.io/x/accounts/defaults/lockup v0.0.0-20240417181816-5e7aae0db1f5 // indirect
+	cosmossdk.io/x/accounts/defaults/multisig v0.0.0-00010101000000-000000000000 // indirect
 	cosmossdk.io/x/epochs v0.0.0-20240522060652-a1ae4c3e0337 // indirect
 	cosmossdk.io/x/protocolpool v0.0.0-20230925135524-a1bc045b3190 // indirect
 	filippo.io/edwards25519 v1.1.0 // indirect
@@ -233,7 +237,6 @@ require (
 	golang.org/x/tools v0.25.0 // indirect
 	google.golang.org/api v0.186.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240903143218-8af14fe29dc1 // indirect
-	google.golang.org/protobuf v1.34.2 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	gotest.tools/v3 v3.5.1 // indirect
@@ -278,9 +281,9 @@ replace (
 	github.com/cometbft/cometbft/api => github.com/unionlabs/cometbft/api v0.0.0-20240914184101-19d0b7eff401
 	github.com/consensys/gnark-crypto => github.com/unionlabs/gnark-crypto v0.0.0-20231016072529-15c0507b6578
 	github.com/cosmos/cosmos-sdk => github.com/unionlabs/cosmos-sdk-union v0.0.0-20240919220344-5c3e8670172d
-	github.com/cosmos/ibc-go/modules/apps/callbacks => github.com/unionlabs/ibc-go-union/modules/apps/callbacks v0.0.0-20240924152409-d405804a029c
-	github.com/cosmos/ibc-go/modules/capability => github.com/unionlabs/ibc-go-union/modules/capability v0.0.0-20240924152409-d405804a029c
-	github.com/cosmos/ibc-go/v8 => github.com/unionlabs/ibc-go-union/v8 v8.0.0-20240924152409-d405804a029c
+	github.com/cosmos/ibc-go/modules/apps/callbacks => github.com/unionlabs/ibc-go-union/modules/apps/callbacks v0.0.0-20241007161520-333e70c30298
+	github.com/cosmos/ibc-go/modules/capability => github.com/unionlabs/ibc-go-union/modules/capability v0.0.0-20241007161520-333e70c30298
+	github.com/cosmos/ibc-go/v8 => github.com/unionlabs/ibc-go-union/v8 v8.0.0-20241007161520-333e70c30298
 
 	// dgrijalva/jwt-go is deprecated and doesn't receive security updates.
 	// See: https://github.com/cosmos/cosmos-sdk/issues/13134

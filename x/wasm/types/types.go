@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"reflect"
 
+	gogoprotoany "github.com/cosmos/gogoproto/types/any"
 	wasmvmtypes "github.com/CosmWasm/wasmvm/v2/types"
 	"github.com/cosmos/gogoproto/proto"
 
@@ -192,10 +193,8 @@ type ContractInfoExtension interface {
 	String() string
 }
 
-var _ codectypes.UnpackInterfacesMessage = &ContractInfo{}
-
 // UnpackInterfaces implements codectypes.UnpackInterfaces
-func (c *ContractInfo) UnpackInterfaces(unpacker codectypes.AnyUnpacker) error {
+func (c *ContractInfo) UnpackInterfaces(unpacker gogoprotoany.AnyUnpacker) error {
 	var details ContractInfoExtension
 	if err := unpacker.UnpackAny(c.Extension, &details); err != nil {
 		return err
