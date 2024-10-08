@@ -274,6 +274,7 @@ replace (
 	cosmossdk.io/x/protocolpool => github.com/unionlabs/cosmos-sdk-union/x/protocolpool v0.0.0-20240919220344-5c3e8670172d
 	cosmossdk.io/x/slashing => github.com/unionlabs/cosmos-sdk-union/x/slashing v0.0.0-20240919220344-5c3e8670172d
 	cosmossdk.io/x/staking => github.com/unionlabs/cosmos-sdk-union/x/staking v0.0.0-20240919220344-5c3e8670172d
+	cosmossdk.io/x/tx => cosmossdk.io/x/tx v0.13.4-0.20240815194237-858ec2fcb897
 	cosmossdk.io/x/upgrade => github.com/unionlabs/cosmos-sdk-union/x/upgrade v0.0.0-20240919220344-5c3e8670172d
 
 	github.com/99designs/keyring => github.com/cosmos/keyring v1.2.0

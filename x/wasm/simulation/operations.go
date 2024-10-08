@@ -11,7 +11,6 @@ import (
 	errorsmod "cosmossdk.io/errors"
 
 	"github.com/cosmos/cosmos-sdk/x/auth/tx"
-	"github.com/cosmos/cosmos-sdk/baseapp"
 	"github.com/cosmos/cosmos-sdk/codec"
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
@@ -194,7 +193,7 @@ func SimulateMsgMigrateContract(
 ) simtypes.Operation {
 	return func(
 		r *rand.Rand,
-		app *baseapp.BaseApp,
+		app simtypes.AppEntrypoint,
 		ctx sdk.Context,
 		accs []simtypes.Account,
 		chainID string,
@@ -243,7 +242,7 @@ func SimulateMsgClearAdmin(
 ) simtypes.Operation {
 	return func(
 		r *rand.Rand,
-		app *baseapp.BaseApp,
+		app simtypes.AppEntrypoint,
 		ctx sdk.Context,
 		accounts []simtypes.Account,
 		chainID string,
@@ -288,7 +287,7 @@ func SimulateMsgUpdateAmin(
 ) simtypes.Operation {
 	return func(
 		r *rand.Rand,
-		app *baseapp.BaseApp,
+		app simtypes.AppEntrypoint,
 		ctx sdk.Context,
 		accs []simtypes.Account,
 		chainID string,
@@ -323,7 +322,7 @@ func SimulateMsgStoreCode(
 ) simtypes.Operation {
 	return func(
 		r *rand.Rand,
-		app *baseapp.BaseApp,
+		app simtypes.AppEntrypoint,
 		ctx sdk.Context,
 		accs []simtypes.Account,
 		chainID string,
@@ -348,10 +347,10 @@ func SimulateMsgStoreCode(
 }
 
 // CodeIDSelector returns code id to be used in simulations
-type CodeIDSelector = func(ctx sdk.Context, wasmKeeper WasmKeeper) uint64
+type CodeIDSelector = func(ctx context.Context, wasmKeeper WasmKeeper) uint64
 
 // DefaultSimulationCodeIDSelector picks the first code id
-func DefaultSimulationCodeIDSelector(ctx sdk.Context, wasmKeeper WasmKeeper) uint64 {
+func DefaultSimulationCodeIDSelector(ctx context.Context, wasmKeeper WasmKeeper) uint64 {
 	var codeID uint64
 	wasmKeeper.IterateCodeInfos(ctx, func(u uint64, info types.CodeInfo) bool {
 		if info.InstantiateConfig.Permission != types.AccessTypeEverybody {
@@ -372,7 +371,7 @@ func SimulateMsgInstantiateContract(
 ) simtypes.Operation {
 	return func(
 		r *rand.Rand,
-		app *baseapp.BaseApp,
+		app simtypes.AppEntrypoint,
 		ctx sdk.Context,
 		accs []simtypes.Account,
 		chainID string,
@@ -407,13 +406,13 @@ func SimulateMsgInstantiateContract(
 }
 
 // MsgExecuteContractSelector returns contract address to be used in simulations
-type MsgExecuteContractSelector = func(ctx sdk.Context, wasmKeeper WasmKeeper) sdk.AccAddress
+type MsgExecuteContractSelector = func(ctx context.Context, wasmKeeper WasmKeeper) sdk.AccAddress
 
 // MsgExecutePayloader extension point to modify msg with custom payload
 type MsgExecutePayloader func(msg *types.MsgExecuteContract) error
 
 // MsgExecuteSenderSelector extension point that returns the sender address
-type MsgExecuteSenderSelector func(wasmKeeper WasmKeeper, ctx sdk.Context, contractAddr sdk.AccAddress, accs []simtypes.Account) (simtypes.Account, error)
+type MsgExecuteSenderSelector func(wasmKeeper WasmKeeper, ctx context.Context, contractAddr sdk.AccAddress, accs []simtypes.Account) (simtypes.Account, error)
 
 // SimulateMsgExecuteContract create a execute message a reflect contract instance
 func SimulateMsgExecuteContract(
@@ -426,7 +425,7 @@ func SimulateMsgExecuteContract(
 ) simtypes.Operation {
 	return func(
 		r *rand.Rand,
-		app *baseapp.BaseApp,
+		app simtypes.AppEntrypoint,
 		ctx sdk.Context,
 		accs []simtypes.Account,
 		chainID string,
@@ -467,7 +466,7 @@ func SimulateMsgExecuteContract(
 // BuildOperationInput helper to build object
 func BuildOperationInput(
 	r *rand.Rand,
-	app *baseapp.BaseApp,
+	app simtypes.AppEntrypoint,
 	ctx sdk.Context,
 	msg interface {
 		sdk.Msg
@@ -479,7 +478,8 @@ func BuildOperationInput(
 	deposit sdk.Coins,
 ) simulation.OperationInput {
 	interfaceRegistry := codectypes.NewInterfaceRegistry()
-	txConfig := tx.NewTxConfig(codec.NewProtoCodec(interfaceRegistry), tx.DefaultSignModes)
+	signingCtx := interfaceRegistry.SigningContext()
+	txConfig := tx.NewTxConfig(codec.NewProtoCodec(interfaceRegistry), signingCtx.AddressCodec(), signingCtx.ValidatorAddressCodec(), tx.DefaultSignModes)
 	return simulation.OperationInput{
 		R:               r,
 		App:             app,
@@ -496,7 +496,7 @@ func BuildOperationInput(
 }
 
 // DefaultSimulationExecuteContractSelector picks the first contract address
-func DefaultSimulationExecuteContractSelector(ctx sdk.Context, wasmKeeper WasmKeeper) sdk.AccAddress {
+func DefaultSimulationExecuteContractSelector(ctx context.Context, wasmKeeper WasmKeeper) sdk.AccAddress {
 	var r sdk.AccAddress
 	wasmKeeper.IterateContractInfo(ctx, func(address sdk.AccAddress, info types.ContractInfo) bool {
 		r = address
@@ -506,7 +506,7 @@ func DefaultSimulationExecuteContractSelector(ctx sdk.Context, wasmKeeper WasmKe
 }
 
 // DefaultSimulationExecuteSenderSelector queries reflect contract for owner address and selects accounts
-func DefaultSimulationExecuteSenderSelector(wasmKeeper WasmKeeper, ctx sdk.Context, contractAddr sdk.AccAddress, accs []simtypes.Account) (simtypes.Account, error) {
+func DefaultSimulationExecuteSenderSelector(wasmKeeper WasmKeeper, ctx context.Context, contractAddr sdk.AccAddress, accs []simtypes.Account) (simtypes.Account, error) {
 	var none simtypes.Account
 	bz, err := json.Marshal(testdata.ReflectQueryMsg{Owner: &struct{}{}})
 	if err != nil {

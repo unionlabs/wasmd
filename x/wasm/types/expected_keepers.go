@@ -77,12 +77,12 @@ type StakingKeeper interface {
 
 // ChannelKeeper defines the expected IBC channel keeper
 type ChannelKeeper interface {
-	GetChannel(ctx sdk.Context, srcPort, srcChan string) (channel channeltypes.Channel, found bool)
-	GetNextSequenceSend(ctx sdk.Context, portID, channelID string) (uint64, bool)
-	ChanCloseInit(ctx sdk.Context, portID, channelID string, chanCap *capabilitytypes.Capability) error
-	GetAllChannels(ctx sdk.Context) (channels []channeltypes.IdentifiedChannel)
-	SetChannel(ctx sdk.Context, portID, channelID string, channel channeltypes.Channel)
-	GetAllChannelsWithPortPrefix(ctx sdk.Context, portPrefix string) []channeltypes.IdentifiedChannel
+	GetChannel(ctx context.Context, srcPort, srcChan string) (channel channeltypes.Channel, found bool)
+	GetNextSequenceSend(ctx context.Context, portID, channelID string) (uint64, bool)
+	ChanCloseInit(ctx context.Context, portID, channelID string, chanCap *capabilitytypes.Capability) error
+	GetAllChannels(ctx context.Context) (channels []channeltypes.IdentifiedChannel)
+	SetChannel(ctx context.Context, portID, channelID string, channel channeltypes.Channel)
+	GetAllChannelsWithPortPrefix(ctx context.Context, portPrefix string) []channeltypes.IdentifiedChannel
 }
 
 // ICS4Wrapper defines the method for an IBC data package to be submitted.
@@ -97,7 +97,7 @@ type ICS4Wrapper interface {
 	// The packet sequence generated for the packet to be sent is returned. An error
 	// is returned if one occurs.
 	SendPacket(
-		ctx sdk.Context,
+		ctx context.Context,
 		channelCap *capabilitytypes.Capability,
 		sourcePort string,
 		sourceChannel string,
@@ -107,7 +107,7 @@ type ICS4Wrapper interface {
 	) (uint64, error)
 
 	WriteAcknowledgement(
-		ctx sdk.Context,
+		ctx context.Context,
 		chanCap *capabilitytypes.Capability,
 		packet ibcexported.PacketI,
 		acknowledgement ibcexported.Acknowledgement,
@@ -116,26 +116,26 @@ type ICS4Wrapper interface {
 
 // ClientKeeper defines the expected IBC client keeper
 type ClientKeeper interface {
-	GetClientConsensusState(ctx sdk.Context, clientID string) (connection ibcexported.ConsensusState, found bool)
+	GetClientConsensusState(ctx context.Context, clientID string) (connection ibcexported.ConsensusState, found bool)
 }
 
 // ConnectionKeeper defines the expected IBC connection keeper
 type ConnectionKeeper interface {
-	GetConnection(ctx sdk.Context, connectionID string) (connection connectiontypes.ConnectionEnd, found bool)
+	GetConnection(ctx context.Context, connectionID string) (connection connectiontypes.ConnectionEnd, found bool)
 }
 
 // PortKeeper defines the expected IBC port keeper
 type PortKeeper interface {
-	BindPort(ctx sdk.Context, portID string) *capabilitytypes.Capability
+	BindPort(ctx context.Context, portID string) *capabilitytypes.Capability
 }
 
 type CapabilityKeeper interface {
-	GetCapability(ctx sdk.Context, name string) (*capabilitytypes.Capability, bool)
-	ClaimCapability(ctx sdk.Context, cap *capabilitytypes.Capability, name string) error
-	AuthenticateCapability(ctx sdk.Context, capability *capabilitytypes.Capability, name string) bool
+	GetCapability(ctx context.Context, name string) (*capabilitytypes.Capability, bool)
+	ClaimCapability(ctx context.Context, cap *capabilitytypes.Capability, name string) error
+	AuthenticateCapability(ctx context.Context, capability *capabilitytypes.Capability, name string) bool
 }
 
 // ICS20TransferPortSource is a subset of the ibc transfer keeper.
 type ICS20TransferPortSource interface {
-	GetPort(ctx sdk.Context) string
+	GetPort(ctx context.Context) string
 }

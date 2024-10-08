@@ -47,12 +47,12 @@ type Option interface {
 // WasmVMQueryHandler is an extension point for custom query handler implementations
 type WasmVMQueryHandler interface {
 	// HandleQuery executes the requested query
-	HandleQuery(ctx sdk.Context, caller sdk.AccAddress, request wasmvmtypes.QueryRequest) ([]byte, error)
+	HandleQuery(ctx context.Context, caller sdk.AccAddress, request wasmvmtypes.QueryRequest) ([]byte, error)
 }
 
 type CoinTransferrer interface {
 	// TransferCoins sends the coin amounts from the source to the destination with rules applied.
-	TransferCoins(ctx sdk.Context, fromAddr, toAddr sdk.AccAddress, amt sdk.Coins) error
+	TransferCoins(ctx context.Context, fromAddr, toAddr sdk.AccAddress, amt sdk.Coins) error
 }
 
 // AccountPruner handles the balances and data cleanup for accounts that are pruned on contract instantiate.
@@ -61,14 +61,14 @@ type AccountPruner interface {
 	// CleanupExistingAccount handles the cleanup process for balances and data of the given account. The persisted account
 	// type is already reset to base account at this stage.
 	// The method returns true when the account address can be reused. Unsupported account types are rejected by returning false
-	CleanupExistingAccount(ctx sdk.Context, existingAccount sdk.AccountI) (handled bool, err error)
+	CleanupExistingAccount(ctx context.Context, existingAccount sdk.AccountI) (handled bool, err error)
 }
 
 // WasmVMResponseHandler is an extension point to handles the response data returned by a contract call.
 type WasmVMResponseHandler interface {
 	// Handle processes the data returned by a contract invocation.
 	Handle(
-		ctx sdk.Context,
+		ctx context.Context,
 		contractAddr sdk.AccAddress,
 		ibcPort string,
 		messages []wasmvmtypes.SubMsg,
@@ -1247,8 +1247,8 @@ func (k *Keeper) handleContractResponse(
 	return k.wasmVMResponseHandler.Handle(ctx, contractAddr, ibcPort, msgs, data)
 }
 
-func (k Keeper) runtimeGasForContract(ctx sdk.Context) uint64 {
-	meter := ctx.GasMeter()
+func (k Keeper) runtimeGasForContract(ctx context.Context) uint64 {
+	meter := sdk.UnwrapSDKContext(ctx).GasMeter()
 	if meter.IsOutOfGas() {
 		return 0
 	}
@@ -1344,7 +1344,7 @@ func (k Keeper) importContract(ctx context.Context, contractAddr sdk.AccAddress,
 	return k.importContractState(ctx, contractAddr, state)
 }
 
-func (k Keeper) newQueryHandler(ctx sdk.Context, contractAddress sdk.AccAddress) QueryHandler {
+func (k Keeper) newQueryHandler(ctx context.Context, contractAddress sdk.AccAddress) QueryHandler {
 	return NewQueryHandler(ctx, k.wasmVMQueryHandler, contractAddress, k.gasRegister)
 }
 
@@ -1364,17 +1364,17 @@ func (m MultipliedGasMeter) GasConsumed() storetypes.Gas {
 	return m.GasRegister.ToWasmVMGas(m.originalMeter.GasConsumed())
 }
 
-func (k Keeper) gasMeter(ctx sdk.Context) MultipliedGasMeter {
-	return NewMultipliedGasMeter(ctx.GasMeter(), k.gasRegister)
+func (k Keeper) gasMeter(ctx context.Context) MultipliedGasMeter {
+	return NewMultipliedGasMeter(sdk.UnwrapSDKContext(ctx).GasMeter(), k.gasRegister)
 }
 
 // Logger returns a module-specific logger.
-func (k Keeper) Logger(ctx sdk.Context) log.Logger {
+func (k Keeper) Logger(ctx context.Context) log.Logger {
 	return moduleLogger(ctx)
 }
 
-func moduleLogger(ctx sdk.Context) log.Logger {
-	return ctx.Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
+func moduleLogger(ctx context.Context) log.Logger {
+	return sdk.UnwrapSDKContext(ctx).Logger().With("module", fmt.Sprintf("x/%s", types.ModuleName))
 }
 
 // Querier creates a new grpc querier instance
@@ -1401,9 +1401,9 @@ func NewBankCoinTransferrer(keeper types.BankKeeper) BankCoinTransferrer {
 
 // TransferCoins transfers coins from source to destination account when coin send was enabled for them and the recipient
 // is not in the blocked address list.
-func (c BankCoinTransferrer) TransferCoins(parentCtx sdk.Context, fromAddr, toAddr sdk.AccAddress, amount sdk.Coins) error {
+func (c BankCoinTransferrer) TransferCoins(parentCtx context.Context, fromAddr, toAddr sdk.AccAddress, amount sdk.Coins) error {
 	em := sdk.NewEventManager()
-	ctx := parentCtx.WithEventManager(em)
+	ctx := sdk.UnwrapSDKContext(parentCtx).WithEventManager(em)
 	if err := c.keeper.IsSendEnabledCoins(ctx, amount...); err != nil {
 		return err
 	}
@@ -1419,7 +1419,7 @@ func (c BankCoinTransferrer) TransferCoins(parentCtx sdk.Context, fromAddr, toAd
 		if e.Type == sdk.EventTypeMessage { // skip messages as we talk to the keeper directly
 			continue
 		}
-		parentCtx.EventManager().EmitEvent(e)
+		sdk.UnwrapSDKContext(parentCtx).EventManager().EmitEvent(e)
 	}
 	return nil
 }
@@ -1441,13 +1441,13 @@ func NewVestingCoinBurner(bank types.BankKeeper) VestingCoinBurner {
 
 // CleanupExistingAccount accepts only vesting account types to burns all their original vesting coin balances.
 // Other account types will be rejected and returned as unhandled.
-func (b VestingCoinBurner) CleanupExistingAccount(ctx sdk.Context, existingAcc sdk.AccountI) (handled bool, err error) {
+func (b VestingCoinBurner) CleanupExistingAccount(ctx context.Context, existingAcc sdk.AccountI) (handled bool, err error) {
 	v, ok := existingAcc.(vestingexported.VestingAccount)
 	if !ok {
 		return false, nil
 	}
 
-	ctx = ctx.WithGasMeter(storetypes.NewInfiniteGasMeter())
+	ctx = sdk.UnwrapSDKContext(ctx).WithGasMeter(storetypes.NewInfiniteGasMeter())
 	coinsToBurn := sdk.NewCoins()
 	for _, orig := range v.GetOriginalVesting() { // focus on the coin denoms that were setup originally; getAllBalances has some issues
 		coinsToBurn = append(coinsToBurn, b.bank.GetBalance(ctx, existingAcc.GetAddress(), orig.Denom))
@@ -1462,7 +1462,7 @@ func (b VestingCoinBurner) CleanupExistingAccount(ctx sdk.Context, existingAcc s
 }
 
 type msgDispatcher interface {
-	DispatchSubmessages(ctx sdk.Context, contractAddr sdk.AccAddress, ibcPort string, msgs []wasmvmtypes.SubMsg) ([]byte, error)
+	DispatchSubmessages(ctx context.Context, contractAddr sdk.AccAddress, ibcPort string, msgs []wasmvmtypes.SubMsg) ([]byte, error)
 }
 
 // DefaultWasmVMContractResponseHandler default implementation that first dispatches submessage then normal messages.
@@ -1477,7 +1477,7 @@ func NewDefaultWasmVMContractResponseHandler(md msgDispatcher) *DefaultWasmVMCon
 }
 
 // Handle processes the data returned by a contract invocation.
-func (h DefaultWasmVMContractResponseHandler) Handle(ctx sdk.Context, contractAddr sdk.AccAddress, ibcPort string, messages []wasmvmtypes.SubMsg, origRspData []byte) ([]byte, error) {
+func (h DefaultWasmVMContractResponseHandler) Handle(ctx context.Context, contractAddr sdk.AccAddress, ibcPort string, messages []wasmvmtypes.SubMsg, origRspData []byte) ([]byte, error) {
 	result := origRspData
 	switch rsp, err := h.md.DispatchSubmessages(ctx, contractAddr, ibcPort, messages); {
 	case err != nil:

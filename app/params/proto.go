@@ -31,7 +31,8 @@ func MakeEncodingConfig() EncodingConfig {
 	}
 
 	marshaler := codec.NewProtoCodec(interfaceRegistry)
-	txCfg := tx.NewTxConfig(marshaler, tx.DefaultSignModes)
+	signingCtx := interfaceRegistry.SigningContext()
+	txCfg := tx.NewTxConfig(marshaler, signingCtx.AddressCodec(), signingCtx.ValidatorAddressCodec(), tx.DefaultSignModes)
 
 	return EncodingConfig{
 		InterfaceRegistry: interfaceRegistry,

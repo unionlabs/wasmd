@@ -100,7 +100,7 @@ func (h SDKMessageHandler) handleSdkMessage(ctx sdk.Context, contractAddr sdk.Ad
 	}
 
 	// make sure this account can send it
-	signers, _, err := h.cdc.GetMsgV1Signers(msg)
+	signers, _, err := h.cdc.GetMsgSigners(msg)
 	if err != nil {
 		return nil, err
 	}
