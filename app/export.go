@@ -7,13 +7,14 @@ import (
 
 	cmtproto "github.com/cometbft/cometbft/api/cometbft/types/v1"
 
+	"cosmossdk.io/collections"
 	storetypes "cosmossdk.io/store/types"
 
-	servertypes "github.com/cosmos/cosmos-sdk/server/types"
-	sdk "github.com/cosmos/cosmos-sdk/types"
 	slashingtypes "cosmossdk.io/x/slashing/types"
 	"cosmossdk.io/x/staking"
 	stakingtypes "cosmossdk.io/x/staking/types"
+	servertypes "github.com/cosmos/cosmos-sdk/server/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 // ExportAppStateAndValidators exports the state of the application for a genesis
@@ -30,7 +31,7 @@ func (app *WasmApp) ExportAppStateAndValidators(forZeroHeight bool, jailAllowedA
 		app.prepForZeroHeightGenesis(ctx, jailAllowedAddrs)
 	}
 
-	genState, err := app.ModuleManager.ExportGenesisForModules(ctx, app.appCodec, modulesToExport)
+	genState, err := app.ModuleManager.ExportGenesisForModules(ctx, modulesToExport)
 	if err != nil {
 		return servertypes.ExportedApp{}, err
 	}
@@ -41,6 +42,7 @@ func (app *WasmApp) ExportAppStateAndValidators(forZeroHeight bool, jailAllowedA
 	}
 
 	validators, err := staking.WriteValidators(ctx, app.StakingKeeper)
+
 	return servertypes.ExportedApp{
 		AppState:        appState,
 		Validators:      validators,
@@ -71,13 +73,10 @@ func (app *WasmApp) prepForZeroHeightGenesis(ctx sdk.Context, jailAllowedAddrs [
 		allowedAddrsMap[addr] = true
 	}
 
-	/* Just to be safe, assert the invariants on current state. */
-	app.CrisisKeeper.AssertInvariants(ctx)
-
 	/* Handle fee distribution state. */
 
 	// withdraw all validator commission
-	err := app.StakingKeeper.IterateValidators(ctx, func(_ int64, val stakingtypes.ValidatorI) (stop bool) {
+	err := app.StakingKeeper.IterateValidators(ctx, func(_ int64, val sdk.ValidatorI) (stop bool) {
 		valBz, err := app.StakingKeeper.ValidatorAddressCodec().StringToBytes(val.GetOperator())
 		if err != nil {
 			panic(err)
@@ -108,11 +107,16 @@ func (app *WasmApp) prepForZeroHeightGenesis(ctx sdk.Context, jailAllowedAddrs [
 		}
 	}
 
-	// clear validator slash events
-	app.DistrKeeper.DeleteAllValidatorSlashEvents(ctx)
+	err = app.DistrKeeper.ValidatorSlashEvents.Clear(ctx, nil)
+	if err != nil {
+		panic(err)
+	}
 
 	// clear validator historical rewards
-	app.DistrKeeper.DeleteAllValidatorHistoricalRewards(ctx)
+	err = app.DistrKeeper.ValidatorHistoricalRewards.Clear(ctx, nil)
+	if err != nil {
+		panic(err)
+	}
 
 	// set context height to zero
 	height := ctx.BlockHeight()
@@ -187,16 +191,20 @@ func (app *WasmApp) prepForZeroHeightGenesis(ctx sdk.Context, jailAllowedAddrs [
 	}
 
 	// iterate through unbonding delegations, reset creation height
-	err = app.StakingKeeper.IterateUnbondingDelegations(ctx, func(_ int64, ubd stakingtypes.UnbondingDelegation) (stop bool) {
-		for i := range ubd.Entries {
-			ubd.Entries[i].CreationHeight = 0
-		}
-		err = app.StakingKeeper.SetUnbondingDelegation(ctx, ubd)
-		if err != nil {
-			panic(err)
-		}
-		return false
-	})
+	err = app.StakingKeeper.UnbondingDelegations.Walk(
+		ctx,
+		nil,
+		func(_ collections.Pair[[]byte, []byte], ubd stakingtypes.UnbondingDelegation) (stop bool, err error) {
+			for i := range ubd.Entries {
+				ubd.Entries[i].CreationHeight = 0
+			}
+			err = app.StakingKeeper.SetUnbondingDelegation(ctx, ubd)
+			if err != nil {
+				return true, err
+			}
+			return false, err
+		},
+	)
 	if err != nil {
 		panic(err)
 	}
@@ -236,17 +244,16 @@ func (app *WasmApp) prepForZeroHeightGenesis(ctx sdk.Context, jailAllowedAddrs [
 
 	/* Handle slashing state. */
 
+
 	// reset start height on signing infos
-	err = app.SlashingKeeper.IterateValidatorSigningInfos(
-		ctx,
-		func(addr sdk.ConsAddress, info slashingtypes.ValidatorSigningInfo) (stop bool) {
-			info.StartHeight = 0
-			if err := app.SlashingKeeper.SetValidatorSigningInfo(ctx, addr, info); err != nil {
-				panic(err)
-			}
-			return false
-		},
-	)
+	err = app.SlashingKeeper.ValidatorSigningInfo.Walk(ctx, nil, func(addr sdk.ConsAddress, info slashingtypes.ValidatorSigningInfo) (stop bool, err error) {
+		info.StartHeight = 0
+		err = app.SlashingKeeper.ValidatorSigningInfo.Set(ctx, addr, info)
+		if err != nil {
+			return true, err
+		}
+		return false, nil
+	})
 	if err != nil {
 		panic(err)
 	}

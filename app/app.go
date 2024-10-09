@@ -42,7 +42,6 @@ import (
 	autocliv1 "cosmossdk.io/api/cosmos/autocli/v1"
 	reflectionv1 "cosmossdk.io/api/cosmos/reflection/v1"
 	"cosmossdk.io/client/v2/autocli"
-	"cosmossdk.io/core/appmodule"
 	"cosmossdk.io/log"
 	storetypes "cosmossdk.io/store/types"
 	"cosmossdk.io/x/circuit"
@@ -86,7 +85,6 @@ import (
 	mintkeeper "cosmossdk.io/x/mint/keeper"
 	minttypes "cosmossdk.io/x/mint/types"
 	"cosmossdk.io/x/params"
-	paramsclient "cosmossdk.io/x/params/client"
 	paramskeeper "cosmossdk.io/x/params/keeper"
 	paramstypes "cosmossdk.io/x/params/types"
 	paramproposal "cosmossdk.io/x/params/types/proposal"
@@ -134,7 +132,6 @@ import (
 	lockup "cosmossdk.io/x/accounts/defaults/lockup"
 	"cosmossdk.io/x/accounts/defaults/multisig"
 
-	"cosmossdk.io/x/protocolpool"
 	poolkeeper "cosmossdk.io/x/protocolpool/keeper"
 	pooltypes "cosmossdk.io/x/protocolpool/types"
 
@@ -243,7 +240,6 @@ type WasmApp struct {
 
 	// the module manager
 	ModuleManager      *module.Manager
-	BasicModuleManager module.BasicManager
 
 	// simulation manager
 	sm *module.SimulationManager
@@ -672,24 +668,20 @@ func NewWasmApp(
 	// NOTE: Any module instantiated in the module manager that is later modified
 	// must be passed by reference here.
 	app.ModuleManager = module.NewManager(
-		genutil.NewAppModule(
-			app.AccountKeeper,
-			app.StakingKeeper,
-			app,
-			txConfig,
-		),
-		auth.NewAppModule(appCodec, app.AccountKeeper, authsims.RandomGenesisAccounts, app.GetSubspace(authtypes.ModuleName)),
+		genutil.NewAppModule(appCodec, app.AccountKeeper, app.StakingKeeper, app, txConfig, genutiltypes.DefaultMessageValidator),
+		accounts.NewAppModule(appCodec, app.AccountsKeeper),
+		auth.NewAppModule(appCodec, app.AccountKeeper, app.AccountsKeeper, authsims.RandomGenesisAccounts, nil),
 		vesting.NewAppModule(app.AccountKeeper, app.BankKeeper),
 		bank.NewAppModule(appCodec, app.BankKeeper, app.AccountKeeper),
 		feegrantmodule.NewAppModule(appCodec, app.AccountKeeper, app.BankKeeper, app.FeeGrantKeeper, app.interfaceRegistry),
-		gov.NewAppModule(appCodec, &app.GovKeeper, app.AccountKeeper, app.BankKeeper),
+		gov.NewAppModule(appCodec, &app.GovKeeper, app.AccountKeeper, app.BankKeeper, app.PoolKeeper),
 		mint.NewAppModule(appCodec, app.MintKeeper, app.AccountKeeper, nil),
 
 		slashing.NewAppModule(appCodec, app.SlashingKeeper, app.AccountKeeper, app.BankKeeper, app.StakingKeeper, app.interfaceRegistry, cometService),
 		distr.NewAppModule(appCodec, app.DistrKeeper, app.AccountKeeper, app.BankKeeper, app.StakingKeeper),
 		staking.NewAppModule(appCodec, app.StakingKeeper, app.AccountKeeper, app.BankKeeper),
 		upgrade.NewAppModule(app.UpgradeKeeper),
-		evidence.NewAppModule(app.EvidenceKeeper),
+		evidence.NewAppModule(appCodec, app.EvidenceKeeper, cometService),
 		params.NewAppModule(app.ParamsKeeper),
 		authzmodule.NewAppModule(appCodec, app.AuthzKeeper, app.AccountKeeper, app.BankKeeper, app.interfaceRegistry),
 		groupmodule.NewAppModule(appCodec, app.GroupKeeper, app.AccountKeeper, app.BankKeeper, app.interfaceRegistry),
@@ -710,16 +702,18 @@ func NewWasmApp(
 	// non-dependant module elements, such as codec registration and genesis verification.
 	// By default it is composed of all the module from the module manager.
 	// Additionally, app module basics can be overwritten by passing them as argument.
-	app.BasicModuleManager = module.NewBasicManagerFromManager(
-		app.ModuleManager,
-		map[string]module.AppModuleBasic{
-			genutiltypes.ModuleName: genutil.NewAppModuleBasic(genutiltypes.DefaultMessageValidator),
-			govtypes.ModuleName: gov.NewAppModuleBasic(
-				[]govclient.ProposalHandler{
-					paramsclient.ProposalHandler,
-				},
-			),
-		})
+
+	// TODO:?
+	// app.BasicModuleManager = module.NewBasicManagerFromManager(
+	// 	app.ModuleManager,
+	// 	map[string]module.AppModuleBasic{
+	// 		genutiltypes.ModuleName: genutil.NewAppModuleBasic(genutiltypes.DefaultMessageValidator),
+	// 		govtypes.ModuleName: gov.NewAppModuleBasic(
+	// 			[]govclient.ProposalHandler{
+	// 				paramsclient.ProposalHandler,
+	// 			},
+	// 		),
+	// 	})
 	app.BasicModuleManager.RegisterLegacyAminoCodec(legacyAmino)
 	app.BasicModuleManager.RegisterInterfaces(interfaceRegistry)
 
@@ -820,7 +814,7 @@ func NewWasmApp(
 	// NOTE: this is not required apps that don't use the simulator for fuzz testing
 	// transactions
 	overrideModules := map[string]module.AppModuleSimulation{
-		authtypes.ModuleName: auth.NewAppModule(app.appCodec, app.AccountKeeper, authsims.RandomGenesisAccounts, app.GetSubspace(authtypes.ModuleName)),
+		authtypes.ModuleName: auth.NewAppModule(app.appCodec, app.AccountKeeper, app.AccountsKeeper, authsims.RandomGenesisAccounts, nil),
 	}
 	app.sm = module.NewSimulationManagerFromAppModules(app.ModuleManager.Modules, overrideModules)
 
@@ -967,8 +961,7 @@ func (app *WasmApp) InitChainer(ctx sdk.Context, req *abci.InitChainRequest) (*a
 	if err != nil {
 		panic(err)
 	}
-	response, err := app.ModuleManager.InitGenesis(ctx, app.appCodec, genesisState)
-	return response, err
+	return app.ModuleManager.InitGenesis(ctx, genesisState)
 }
 
 // LoadHeight loads a particular height
@@ -1004,22 +997,9 @@ func (app *WasmApp) TxConfig() client.TxConfig {
 
 // AutoCliOpts returns the autocli options for the app.
 func (app *WasmApp) AutoCliOpts() autocli.AppOptions {
-	modules := make(map[string]appmodule.AppModule, 0)
-	for _, m := range app.ModuleManager.Modules {
-		if moduleWithName, ok := m.(module.HasName); ok {
-			moduleName := moduleWithName.Name()
-			if appModule, ok := moduleWithName.(appmodule.AppModule); ok {
-				modules[moduleName] = appModule
-			}
-		}
-	}
-
 	return autocli.AppOptions{
-		Modules:       modules,
+		Modules:       app.ModuleManager.Modules,
 		ModuleOptions: runtimeservices.ExtractAutoCLIOptions(app.ModuleManager.Modules),
-		// AddressCodec:          authcodec.NewBech32Codec(sdk.GetConfig().GetBech32AccountAddrPrefix()),
-		// ValidatorAddressCodec: authcodec.NewBech32Codec(sdk.GetConfig().GetBech32ValidatorAddrPrefix()),
-		// ConsensusAddressCodec: authcodec.NewBech32Codec(sdk.GetConfig().GetBech32ConsensusAddrPrefix()),
 	}
 }
 
