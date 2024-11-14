@@ -13,7 +13,9 @@ import (
 )
 
 func main() {
-	logog.Println(http.ListenAndServe("localhost:6060", nil))
+	go func() {
+		logog.Println(http.ListenAndServe("localhost:6060", nil))
+	}()
 	rootCmd := NewRootCmd()
 
 	if err := svrcmd.Execute(rootCmd, "", app.DefaultNodeHome); err != nil {
