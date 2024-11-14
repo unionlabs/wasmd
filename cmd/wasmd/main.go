@@ -3,7 +3,6 @@ package main
 import _ "net/http/pprof"
 
 import (
-	"net/http"
 	"os"
 
 	"cosmossdk.io/log"
@@ -14,7 +13,6 @@ import (
 )
 
 func main() {
-	http.ListenAndServe("localhost:6060", nil)
 	rootCmd := NewRootCmd()
 
 	if err := svrcmd.Execute(rootCmd, "", app.DefaultNodeHome); err != nil {
