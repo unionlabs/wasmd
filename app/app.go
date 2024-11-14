@@ -1,7 +1,5 @@
 package app
 
-import _ "net/http/pprof"
-
 import (
 	"encoding/json"
 	"fmt"
