@@ -1,18 +1,19 @@
 package main
 
-import _ "net/http/pprof"
-
 import (
+	logog "log"
+	"net/http"
+	_ "net/http/pprof"
 	"os"
 
 	"cosmossdk.io/log"
 
-	svrcmd "github.com/cosmos/cosmos-sdk/server/cmd"
-
 	"github.com/CosmWasm/wasmd/app"
+	svrcmd "github.com/cosmos/cosmos-sdk/server/cmd"
 )
 
 func main() {
+	logog.Println(http.ListenAndServe("localhost:6060", nil))
 	rootCmd := NewRootCmd()
 
 	if err := svrcmd.Execute(rootCmd, "", app.DefaultNodeHome); err != nil {
