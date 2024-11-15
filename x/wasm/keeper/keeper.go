@@ -325,6 +325,7 @@ func (k Keeper) instantiate(
 	gasLeft := k.runtimeGasForContract(sdkCtx)
 	res, gasUsed, err := k.wasmVM.Instantiate(codeInfo.CodeHash, env, info, initMsg, vmStore, cosmwasmAPI, querier, k.gasMeter(sdkCtx), gasLeft, costJSONDeserialization)
 	k.consumeRuntimeGas(sdkCtx, gasUsed)
+	panic("After instantiate")
 	if err != nil {
 		return nil, nil, errorsmod.Wrap(types.ErrVMError, err.Error())
 	}
