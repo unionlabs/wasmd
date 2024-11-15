@@ -3,7 +3,7 @@ package main
 import (
 	logog "log"
 	"net/http"
-	"net/http/pprof"
+	_ "net/http/pprof"
 	"os"
 
 	"cosmossdk.io/log"
@@ -13,14 +13,13 @@ import (
 )
 
 func main() {
+	go func() {
+		logog.Println(http.ListenAndServe("localhost:6060", nil))
+	}()
 	rootCmd := NewRootCmd()
 
 	if err := svrcmd.Execute(rootCmd, "", app.DefaultNodeHome); err != nil {
 		log.NewLogger(rootCmd.OutOrStderr()).Error("failure when running app", "err", err)
 		os.Exit(1)
 	}
-
-	mux := http.NewServeMux()
-	mux.HandleFunc("/custom_debug_path/profile", pprof.Profile)
-	logog.Fatal(http.ListenAndServe(":6060", mux))
 }
