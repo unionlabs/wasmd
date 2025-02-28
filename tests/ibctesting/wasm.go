@@ -10,7 +10,7 @@ import (
 	"strings"
 
 	abci "github.com/cometbft/cometbft/abci/types"
-	"github.com/cometbft/cometbft/libs/rand"
+	// "github.com/cometbft/cometbft/libs/rand"
 	"github.com/cosmos/gogoproto/proto"
 	ibctesting "github.com/cosmos/ibc-go/v8/testing"
 	"github.com/stretchr/testify/require"
@@ -107,7 +107,7 @@ func (chain *TestChain) RawQuery(contractAddr string, queryData []byte) ([]byte,
 		return nil, err
 	}
 
-	res, err := chain.App.Query(context.TODO(), &abci.RequestQuery{
+	res, err := chain.App.Query(context.TODO(), &abci.QueryRequest{
 		Path: "/cosmwasm.wasm.v1.Query/RawContractState",
 		Data: reqBin,
 	})
@@ -145,7 +145,7 @@ func (chain *TestChain) SmartQuery(contractAddr string, queryMsg, response inter
 		return err
 	}
 
-	res, err := chain.App.Query(context.TODO(), &abci.RequestQuery{
+	res, err := chain.App.Query(context.TODO(), &abci.QueryRequest{
 		Path: "/cosmwasm.wasm.v1.Query/SmartContractState",
 		Data: reqBin,
 	})

@@ -9,7 +9,9 @@ import (
 	"sort"
 
 	abci "github.com/cometbft/cometbft/abci/types"
-	tmproto "github.com/cometbft/cometbft/proto/tendermint/types"
+	tmproto "github.com/cometbft/cometbft/api/cometbft/types/v1"
+	cmtcrypto "github.com/cometbft/cometbft/crypto"
+	cmted25519 "github.com/cometbft/cometbft/crypto/ed25519"
 	dbm "github.com/cosmos/cosmos-db"
 	"github.com/cosmos/gogoproto/proto"
 	ibccallbacks "github.com/cosmos/ibc-go/modules/apps/callbacks"
@@ -242,6 +244,16 @@ type WasmApp struct {
 
 	// module configurator
 	configurator module.Configurator
+}
+
+// KeyGenF is a function that generates a private key for use by comet.
+type KeyGenF = func() (cmtcrypto.PrivKey, error)
+
+// ValidatorKeyProvider returns a function that generates a private key for use by comet.
+func (a *WasmApp) ValidatorKeyProvider() KeyGenF {
+	return func() (cmtcrypto.PrivKey, error) {
+		return cmted25519.GenPrivKey(), nil
+	}
 }
 
 // NewWasmApp returns a reference to an initialized WasmApp.
@@ -975,8 +987,9 @@ func (app *WasmApp) setPostHandler() {
 func (app *WasmApp) Name() string { return app.BaseApp.Name() }
 
 // PreBlocker application updates every pre block
-func (app *WasmApp) PreBlocker(ctx sdk.Context, _ *abci.RequestFinalizeBlock) (*sdk.ResponsePreBlock, error) {
-	return app.ModuleManager.PreBlock(ctx)
+func (app *WasmApp) PreBlocker(ctx sdk.Context, _ *abci.FinalizeBlockRequest) error {
+	_, err := app.ModuleManager.PreBlock(ctx)
+	return err
 }
 
 // BeginBlocker application updates every begin block
@@ -994,7 +1007,7 @@ func (a *WasmApp) Configurator() module.Configurator {
 }
 
 // InitChainer application update at chain initialization
-func (app *WasmApp) InitChainer(ctx sdk.Context, req *abci.RequestInitChain) (*abci.ResponseInitChain, error) {
+func (app *WasmApp) InitChainer(ctx sdk.Context, req *abci.InitChainRequest) (*abci.InitChainResponse, error) {
 	var genesisState GenesisState
 	if err := json.Unmarshal(req.AppStateBytes, &genesisState); err != nil {
 		panic(err)

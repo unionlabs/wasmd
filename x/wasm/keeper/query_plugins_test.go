@@ -10,7 +10,7 @@ import (
 
 	wasmvmtypes "github.com/CosmWasm/wasmvm/v2/types"
 	abci "github.com/cometbft/cometbft/abci/types"
-	cmtproto "github.com/cometbft/cometbft/proto/tendermint/types"
+	cmtproto "github.com/cometbft/cometbft/api/cometbft/types/v1"
 	dbm "github.com/cosmos/cosmos-db"
 	"github.com/cosmos/gogoproto/proto"
 	channeltypes "github.com/cosmos/ibc-go/v8/modules/core/04-channel/types"
@@ -697,7 +697,7 @@ type mockedQueryRouter struct {
 }
 
 func (m mockedQueryRouter) Route(_ string) baseapp.GRPCQueryHandler {
-	return func(ctx sdk.Context, req *abci.RequestQuery) (*abci.ResponseQuery, error) {
+	return func(ctx sdk.Context, req *abci.QueryRequest) (*abci.QueryResponse, error) {
 		balanceReq := &banktypes.QueryBalanceRequest{}
 		if err := m.codec.Unmarshal(req.Data, balanceReq); err != nil {
 			return nil, err
@@ -713,7 +713,7 @@ func (m mockedQueryRouter) Route(_ string) baseapp.GRPCQueryHandler {
 			return nil, err
 		}
 
-		return &abci.ResponseQuery{
+		return &abci.QueryResponse{
 			Value: resValue,
 		}, nil
 	}
