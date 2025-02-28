@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	// "github.com/cometbft/cometbft/libs/rand"
+	"github.com/cometbft/cometbft/libs/rand"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
