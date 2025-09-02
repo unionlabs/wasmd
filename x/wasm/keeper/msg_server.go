@@ -4,6 +4,7 @@ import (
 	"context"
 
 	errorsmod "cosmossdk.io/errors"
+	storetypes "cosmossdk.io/store/types"
 
 	sdk "github.com/cosmos/cosmos-sdk/types"
 
@@ -31,6 +32,8 @@ func (m msgServer) StoreCode(ctx context.Context, msg *types.MsgStoreCode) (*typ
 	if err != nil {
 		return nil, errorsmod.Wrap(err, "sender")
 	}
+
+	ctx = alterGasForCtx(ctx)
 
 	policy := m.selectAuthorizationPolicy(ctx, msg.Sender)
 
@@ -484,4 +487,14 @@ func (m msgServer) UpdateContractLabel(ctx context.Context, msg *types.MsgUpdate
 	}
 
 	return &types.MsgUpdateContractLabelResponse{}, nil
+}
+
+func alterGasForCtx(ctx context.Context) context.Context {
+	sdkCtx := sdk.UnwrapSDKContext(ctx)
+
+	gasConfig := storetypes.KVGasConfig()
+	gasConfig.WriteCostFlat = 20_000
+	gasConfig.WriteCostPerByte = 3_000
+
+	return sdkCtx.WithKVGasConfig(gasConfig)
 }
