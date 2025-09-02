@@ -65,6 +65,8 @@ func (m msgServer) InstantiateContract(ctx context.Context, msg *types.MsgInstan
 		}
 	}
 
+	ctx = alterGasForCtx(ctx)
+
 	policy := m.selectAuthorizationPolicy(ctx, msg.Sender)
 
 	contractAddr, data, err := m.keeper.instantiate(ctx, msg.CodeID, senderAddr, adminAddr, msg.Msg, msg.Label, msg.Funds, m.keeper.ClassicAddressGenerator(), policy)
@@ -95,6 +97,8 @@ func (m msgServer) InstantiateContract2(ctx context.Context, msg *types.MsgInsta
 		}
 	}
 
+	ctx = alterGasForCtx(ctx)
+
 	policy := m.selectAuthorizationPolicy(ctx, msg.Sender)
 
 	addrGenerator := PredictableAddressGenerator(senderAddr, msg.Salt, msg.Msg, msg.FixMsg)
@@ -124,6 +128,8 @@ func (m msgServer) ExecuteContract(ctx context.Context, msg *types.MsgExecuteCon
 		return nil, errorsmod.Wrap(err, "contract")
 	}
 
+	ctx = alterGasForCtx(ctx)
+
 	data, err := m.keeper.execute(ctx, contractAddr, senderAddr, msg.Msg, msg.Funds)
 	if err != nil {
 		return nil, err
@@ -147,6 +153,8 @@ func (m msgServer) MigrateContract(ctx context.Context, msg *types.MsgMigrateCon
 	if err != nil {
 		return nil, errorsmod.Wrap(err, "contract")
 	}
+
+	ctx = alterGasForCtx(ctx)
 
 	policy := m.selectAuthorizationPolicy(ctx, msg.Sender)
 
@@ -178,6 +186,8 @@ func (m msgServer) UpdateAdmin(ctx context.Context, msg *types.MsgUpdateAdmin) (
 		return nil, errorsmod.Wrap(err, "new admin")
 	}
 
+	ctx = alterGasForCtx(ctx)
+
 	policy := m.selectAuthorizationPolicy(ctx, msg.Sender)
 
 	if err := m.keeper.setContractAdmin(ctx, contractAddr, senderAddr, newAdminAddr, policy); err != nil {
@@ -201,6 +211,8 @@ func (m msgServer) ClearAdmin(ctx context.Context, msg *types.MsgClearAdmin) (*t
 		return nil, errorsmod.Wrap(err, "contract")
 	}
 
+	ctx = alterGasForCtx(ctx)
+
 	policy := m.selectAuthorizationPolicy(ctx, msg.Sender)
 
 	if err := m.keeper.setContractAdmin(ctx, contractAddr, senderAddr, nil, policy); err != nil {
@@ -219,6 +231,9 @@ func (m msgServer) UpdateInstantiateConfig(ctx context.Context, msg *types.MsgUp
 	if err != nil {
 		return nil, errorsmod.Wrap(err, "sender")
 	}
+
+	ctx = alterGasForCtx(ctx)
+
 	policy := m.selectAuthorizationPolicy(ctx, msg.Sender)
 
 	if err := m.keeper.setAccessConfig(ctx, msg.CodeID, senderAddr, *msg.NewInstantiatePermission, policy); err != nil {
@@ -238,6 +253,8 @@ func (m msgServer) UpdateParams(ctx context.Context, req *types.MsgUpdateParams)
 		return nil, errorsmod.Wrapf(types.ErrInvalid, "invalid authority; expected %s, got %s", authority, req.Authority)
 	}
 
+	ctx = alterGasForCtx(ctx)
+
 	if err := m.keeper.SetParams(ctx, req.Params); err != nil {
 		return nil, err
 	}
@@ -255,6 +272,8 @@ func (m msgServer) PinCodes(ctx context.Context, req *types.MsgPinCodes) (*types
 	if authority != req.Authority {
 		return nil, errorsmod.Wrapf(types.ErrInvalid, "invalid authority; expected %s, got %s", authority, req.Authority)
 	}
+
+	ctx = alterGasForCtx(ctx)
 
 	for _, codeID := range req.CodeIDs {
 		if err := m.keeper.pinCode(ctx, codeID); err != nil {
@@ -275,6 +294,8 @@ func (m msgServer) UnpinCodes(ctx context.Context, req *types.MsgUnpinCodes) (*t
 	if authority != req.Authority {
 		return nil, errorsmod.Wrapf(types.ErrInvalid, "invalid authority; expected %s, got %s", authority, req.Authority)
 	}
+
+	ctx = alterGasForCtx(ctx)
 
 	for _, codeID := range req.CodeIDs {
 		if err := m.keeper.unpinCode(ctx, codeID); err != nil {
@@ -299,6 +320,8 @@ func (m msgServer) SudoContract(ctx context.Context, req *types.MsgSudoContract)
 	if err != nil {
 		return nil, errorsmod.Wrap(err, "contract")
 	}
+
+	ctx = alterGasForCtx(ctx)
 
 	data, err := m.keeper.Sudo(ctx, contractAddr, req.Msg)
 	if err != nil {
@@ -325,6 +348,8 @@ func (m msgServer) StoreAndInstantiateContract(goCtx context.Context, req *types
 			return nil, errorsmod.Wrap(err, "admin")
 		}
 	}
+
+	goCtx = alterGasForCtx(goCtx)
 
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	policy := m.selectAuthorizationPolicy(ctx, req.Authority)
@@ -355,6 +380,7 @@ func (m msgServer) AddCodeUploadParamsAddresses(goCtx context.Context, req *type
 		return nil, errorsmod.Wrapf(types.ErrInvalid, "invalid authority; expected %s, got %s", authority, req.Authority)
 	}
 
+	goCtx = alterGasForCtx(goCtx)
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	params := m.keeper.GetParams(ctx)
@@ -387,6 +413,7 @@ func (m msgServer) RemoveCodeUploadParamsAddresses(goCtx context.Context, req *t
 		return nil, errorsmod.Wrapf(types.ErrInvalid, "invalid authority; expected %s, got %s", authority, req.Authority)
 	}
 
+	goCtx = alterGasForCtx(goCtx)
 	ctx := sdk.UnwrapSDKContext(goCtx)
 
 	params := m.keeper.GetParams(ctx)
@@ -441,6 +468,8 @@ func (m msgServer) StoreAndMigrateContract(goCtx context.Context, req *types.Msg
 		return nil, err
 	}
 
+	goCtx = alterGasForCtx(goCtx)
+
 	ctx := sdk.UnwrapSDKContext(goCtx)
 	policy := m.selectAuthorizationPolicy(ctx, req.Authority)
 
@@ -479,6 +508,8 @@ func (m msgServer) UpdateContractLabel(ctx context.Context, msg *types.MsgUpdate
 	if err != nil {
 		return nil, errorsmod.Wrap(err, "contract")
 	}
+
+	ctx = alterGasForCtx(ctx)
 
 	policy := m.selectAuthorizationPolicy(ctx, msg.Sender)
 
