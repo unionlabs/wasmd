@@ -165,6 +165,9 @@ func (k Keeper) create(ctx context.Context, creator sdk.AccAddress, wasmCode []b
 		Upload:      k.getUploadAccessConfig(sdkCtx),
 	}
 
+	storeFee := 5_000_000 * uint64(len(wasmCode))
+	sdkCtx.GasMeter().ConsumeGas(storeFee, "wasm contract storage fee")
+
 	if !authZ.CanCreateCode(chainConfigs, creator, *instantiateAccess) {
 		return 0, checksum, errorsmod.Wrap(sdkerrors.ErrUnauthorized, "can not create code")
 	}
